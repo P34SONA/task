@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -268,6 +267,42 @@
             font-weight: 500;
         }
 
+        .type-badge {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .type-gcash {
+            background: #0066cc;
+            color: white;
+        }
+
+        .type-eload {
+            background: #ff6b00;
+            color: white;
+        }
+
+        .type-sdp {
+            background: #28a745;
+            color: white;
+        }
+
+        .type-delta {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .week-badge {
+            background: #e2e3e5;
+            color: #383d41;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
         .no-tasks {
             text-align: center;
             padding: 40px;
@@ -324,6 +359,13 @@
             </div>
             <button type="submit" class="btn">Login</button>
         </form>
+        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 6px; font-size: 14px;">
+            <strong>Demo Credentials:</strong><br>
+            Admin: admin / admin123<br>
+            Employee: person / person123<br><br>
+            <strong>✨ Real-time Updates:</strong><br>
+            Assign multiple GCash/Eload/SDP/Delta tasks to employees per day. Changes sync instantly!
+        </div>
     </div>
 
     <!-- Admin Dashboard -->
@@ -343,42 +385,43 @@
 
         <div class="content">
             <div class="task-form">
-                <h2>Create New Task</h2>
+                <h2>Assign Task</h2>
                 <form id="taskForm">
                     <div class="form-group">
-                        <label for="taskTitle">Task Title *</label>
-                        <input type="text" id="taskTitle" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="taskDescription">Task Description *</label>
-                        <textarea id="taskDescription" required></textarea>
+                        <label for="taskType">Task Type *</label>
+                        <select id="taskType" required>
+                            <option value="">Select task type...</option>
+                            <option value="GCash">GCash</option>
+                            <option value="Eload">Eload</option>
+                            <option value="SDP">SDP</option>
+                            <option value="Delta">Delta</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="assignedTo">Assign to Employee *</label>
                         <select id="assignedTo" required>
                             <option value="">Select employee...</option>
-                           <option value="Person">Jan Person Garcia</option>
-                            <option value="Rose">April Rose Bayer</option>
-                            <option value="Divine">Divine Silva</option>
-                            <option value="Liza">Liza Abregana</option>
-                            <option value="Justine">Justine Querubin</option>
-                            <option value="Ezra">Ezra Xamel Tujan</option>
-                            <option value="Claire">Claire Cabiluna</option>
-                            <option value="Jenny">Jenny Matarong</option>
-                            <option value="Chrystal">Chrystal Damiles</option>
-                            <option value="Wendy">Wendy Blue Hinlong</option>
-                            <option value="Lalaine">Lalaine Unabia</option>
-                            <option value="Danica">Danica Caballero</option>
-                            <option value="Marco">Marco Reubal</option>
-                            <option value="Ana">Ana Lhoryn Valente</option>
-
+                            <option value="person">Jan Person Garcia</option>
+                            <option value="rose">April Rose Bayer</option>
+                            <option value="divine">Divine Silva</option>
+                            <option value="liza">Liza Abregana</option>
+                            <option value="justine">Justine Querubin</option>
+                            <option value="ezra">Ezra Xamel Tujan</option>
+                            <option value="claire">Claire Cabiluna</option>
+                            <option value="jenny">Jenny Matarong</option>
+                            <option value="chrystal">Chrystal Damiles</option>
+                            <option value="wendy">Wendy Blue Hinlong</option>
+                            <option value="lalaine">Lalaine Unabia</option>
+                            <option value="danica">Danica Caballero</option>
+                            <option value="marco">Marco Reubal</option>
+                            <option value="ana">Ana Lhoryn Valente</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="taskDate">Due Date *</label>
+                        <label for="taskDate">Date Assigned *</label>
                         <input type="date" id="taskDate" required>
                     </div>
-                    <button type="submit" class="btn">Add Task</button>
+                    <button type="submit" class="btn">Assign Task</button>
                 </form>
             </div>
 
@@ -420,21 +463,21 @@
 
         // Demo users
         const users = {
-            Rojen: { username: 'Rojen', password: 'Rojen123', role: 'admin', name: 'Admin User' },
-            Person: { username: 'Person', password: 'Person', role: 'employee', name: 'Person' },
-            Rose: { username: 'Rose', password: 'Rose', role: 'employee', name: 'Rose' },
-            Divine: { username: 'Divine', password: 'Divine', role: 'employee', name: 'Divine' },
-            Liza: { username: 'Liza', password: 'Liza', role: 'employee', name: 'Liza' },
-              Justine: { username: 'Justine', password: 'Justine', role: 'employee', name: 'Justine' },
-              Ezra: { username: 'Ezra', password: 'Ezra', role: 'employee', name: 'Ezra' },
-              Claire: { username: 'Claire', password: 'Claire', role: 'employee', name: 'Claire' },
-              Jenny: { username: 'Jenny', password: 'Jenny', role: 'employee', name: 'Jenny' },
-              Chrystal: { username: 'Chrystal', password: 'Chrystal', role: 'employee', name: 'Chrystal' },
-              Wendy: { username: 'Wendy', password: 'Wendy', role: 'employee', name: 'Wendy' },
-              Lalaine: { username: 'Lalaine', password: 'Lalaine', role: 'employee', name: 'Lalaine' },
-              Danica: { username: 'Danica', password: 'Danica', role: 'employee', name: 'Danica' },
-              Marco: { username: 'Marco', password: 'Marco', role: 'employee', name: 'Marco' },
-              Ana: { username: 'Ana', password: 'Ana', role: 'employee', name: 'Ana' }
+            admin: { username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User' },
+            person: { username: 'person', password: 'person123', role: 'employee', name: 'Jan Person Garcia' },
+            rose: { username: 'rose', password: 'rose123', role: 'employee', name: 'April Rose Bayer' },
+            divine: { username: 'divine', password: 'divine123', role: 'employee', name: 'Divine Silva' },
+            liza: { username: 'liza', password: 'liza123', role: 'employee', name: 'Liza Abregana' },
+            justine: { username: 'justine', password: 'justine123', role: 'employee', name: 'Justine Querubin' },
+            ezra: { username: 'ezra', password: 'ezra123', role: 'employee', name: 'Ezra Xamel Tujan' },
+            claire: { username: 'claire', password: 'claire123', role: 'employee', name: 'Claire Cabiluna' },
+            jenny: { username: 'jenny', password: 'jenny123', role: 'employee', name: 'Jenny Matarong' },
+            chrystal: { username: 'chrystal', password: 'chrystal123', role: 'employee', name: 'Chrystal Damiles' },
+            wendy: { username: 'wendy', password: 'wendy123', role: 'employee', name: 'Wendy Blue Hinlong' },
+            lalaine: { username: 'lalaine', password: 'lalaine123', role: 'employee', name: 'Lalaine Unabia' },
+            danica: { username: 'danica', password: 'danica123', role: 'employee', name: 'Danica Caballero' },
+            marco: { username: 'marco', password: 'marco123', role: 'employee', name: 'Marco Reubal' },
+            ana: { username: 'ana', password: 'ana123', role: 'employee', name: 'Ana Lhoryn Valente' }
         };
 
         // Load tasks from shared storage
@@ -536,10 +579,9 @@
 
             const task = {
                 id: Date.now(),
-                title: document.getElementById('taskTitle').value,
-                description: document.getElementById('taskDescription').value,
+                type: document.getElementById('taskType').value,
                 assignedTo: document.getElementById('assignedTo').value,
-                dueDate: document.getElementById('taskDate').value,
+                date: document.getElementById('taskDate').value,
                 createdBy: currentUser.username,
                 createdAt: new Date().toISOString()
             };
@@ -551,7 +593,7 @@
             // Reset form
             document.getElementById('taskForm').reset();
             
-            alert('Task added successfully and shared with all users!');
+            alert('Task assigned successfully!');
         });
 
         // Display all tasks for admin
@@ -559,49 +601,69 @@
             const tasksList = document.getElementById('adminTasksList');
             
             if (tasks.length === 0) {
-                tasksList.innerHTML = '<div class="no-tasks">No tasks created yet. Create your first task above!</div>';
+                tasksList.innerHTML = '<div class="no-tasks">No tasks assigned yet. Assign your first task above!</div>';
                 return;
             }
 
             const employeeNames = {
-                Person: 'Jan Person Garcia',
-                Rose: 'April Rose Bayer',
-                Divine: 'Divine Silva',
-                Liza: 'Liza Abregana',
-                Justine: 'Justine Querubin',
-                Ezra: 'Ezra Xamel Tujan',
-                Claire: 'Claire Cabiluna',
-                Jenny: 'Jenny Matarong',
-                Chrystal: 'Chrystal Damiles',
-                Wendy: 'Wendy Blue Hinlong',
-                Lalaine: 'Lalaine Unabia',
-                Danica: 'Danica Caballero',
-                Marco: 'Marco Reubal',
-                Ana: 'Ana Lhoryn Valente',
+                person: 'Jan Person Garcia',
+                rose: 'April Rose Bayer',
+                divine: 'Divine Silva',
+                liza: 'Liza Abregana',
+                justine: 'Justine Querubin',
+                ezra: 'Ezra Xamel Tujan',
+                claire: 'Claire Cabiluna',
+                jenny: 'Jenny Matarong',
+                chrystal: 'Chrystal Damiles',
+                wendy: 'Wendy Blue Hinlong',
+                lalaine: 'Lalaine Unabia',
+                danica: 'Danica Caballero',
+                marco: 'Marco Reubal',
+                ana: 'Ana Lhoryn Valente'
             };
 
-            tasksList.innerHTML = tasks.map(task => `
+            // Group tasks by date and employee
+            const groupedTasks = {};
+            tasks.forEach(task => {
+                const key = `${task.date}_${task.assignedTo}`;
+                if (!groupedTasks[key]) {
+                    groupedTasks[key] = {
+                        date: task.date,
+                        employee: task.assignedTo,
+                        tasks: []
+                    };
+                }
+                groupedTasks[key].tasks.push(task);
+            });
+
+            // Sort by date (newest first)
+            const sortedGroups = Object.values(groupedTasks).sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+
+            tasksList.innerHTML = sortedGroups.map(group => `
                 <div class="task-card">
                     <div class="task-header">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-description">${task.description}</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                                </svg>
+                                <span style="font-weight: 600; font-size: 16px;">${employeeNames[group.employee]}</span>
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                </svg>
+                                <span style="color: #666;">${formatDate(group.date)}</span>
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${group.tasks.map(task => `
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="type-badge type-${task.type.toLowerCase()}">${task.type}</span>
+                                        <button class="btn btn-danger" onclick="deleteTask(${task.id})" style="padding: 4px 8px; font-size: 12px;">✕</button>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                        <button class="btn btn-danger" onclick="deleteTask(${task.id})">Delete</button>
-                    </div>
-                    <div class="task-meta">
-                        <span>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                            </svg>
-                            <span class="employee-badge">${employeeNames[task.assignedTo]}</span>
-                        </span>
-                        <span>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                            </svg>
-                            <span class="date-badge">${formatDate(task.dueDate)}</span>
-                        </span>
                     </div>
                 </div>
             `).join('');
@@ -617,17 +679,32 @@
                 return;
             }
 
-            tasksList.innerHTML = myTasks.map(task => `
+            // Group tasks by date
+            const groupedByDate = {};
+            myTasks.forEach(task => {
+                if (!groupedByDate[task.date]) {
+                    groupedByDate[task.date] = [];
+                }
+                groupedByDate[task.date].push(task);
+            });
+
+            // Sort by date (newest first)
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => 
+                new Date(b) - new Date(a)
+            );
+
+            tasksList.innerHTML = sortedDates.map(date => `
                 <div class="task-card">
-                    <div class="task-title">${task.title}</div>
-                    <div class="task-description">${task.description}</div>
-                    <div class="task-meta">
-                        <span>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                            </svg>
-                            <span class="date-badge">Due: ${formatDate(task.dueDate)}</span>
-                        </span>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                        </svg>
+                        <span style="font-weight: 600; font-size: 17px; color: #333;">${formatDate(date)}</span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        ${groupedByDate[date].map(task => `
+                            <span class="type-badge type-${task.type.toLowerCase()}">${task.type}</span>
+                        `).join('')}
                     </div>
                 </div>
             `).join('');

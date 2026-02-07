@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Task Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            margin: 100px auto;
+        }
+
+        .login-container h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            width: auto;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .role-badge {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .task-form h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .tasks-list {
+            margin-top: 20px;
+        }
+
+        .tasks-list h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .task-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .task-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .employee-badge {
+            display: inline-block;
+            background: #e7e7ff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .date-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .no-tasks {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .task-header {
+                flex-direction: column;
+            }
+
+            .task-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h1>📋 Daily Task Manager</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Login as</label>
+                <select id="role" required>
+                    <option value="">Select role...</option>
+                    <option value="admin">Admin</option>
+                    <option value="employee">Employee</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 6px; font-size: 14px;">
+            <strong>Demo Credentials:</strong><br>
+            Admin: admin / admin123<br>
+            Employee: john / john123
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="container hidden">
+        <div class="header">
+            <h1>📋 Admin Dashboard</h1>
+            <div class="user-info">
+                <span class="role-badge">ADMIN</span>
+                <span id="adminUsername"></span>
+                <button class="btn btn-secondary" onclick="logout()" style="width: auto; padding: 8px 20px;">Logout</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="task-form">
+                <h2>Create New Task</h2>
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title *</label>
+                        <input type="text" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Task Description *</label>
+                        <textarea id="taskDescription" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignedTo">Assign to Employee *</label>
+                        <select id="assignedTo" required>
+                            <option value="">Select employee...</option>
+                            <option value="john">John Doe</option>
+                            <option value="jane">Jane Smith</option>
+                            <option value="mike">Mike Johnson</option>
+                            <option value="sarah">Sarah Williams</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDate">Due Date *</label>
+                        <input type="date" id="taskDate" required>
+                    </div>
+                    <button type="submit" class="btn">Add Task</button>
+                </form>
+            </div>
+
+            <div class="tasks-list">
+                <h2>All Tasks</h2>
+                <div id="adminTasksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Dashboard -->
+    <div id="employeeDashboard" class="container hidden">
+        <div class="header">
+            <h1>📋 My Tasks</h1>
+            <div class="user-info">
+                <span class="role-badge">EMPLOYEE</span>
+                <span id="employeeUsername"></span>
+                <button class="btn btn-secondary" onclick="logout()" style="width: auto; padding: 8px 20px;">Logout</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tasks-list">
+                <h2>Tasks Assigned to Me</h2>
+                <div id="employeeTasksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data structure
+        let tasks = [];
+        let currentUser = null;
+
+        // Demo users
+        const users = {
+            admin: { username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User' },
+            john: { username: 'john', password: 'john123', role: 'employee', name: 'John Doe' },
+            jane: { username: 'jane', password: 'jane123', role: 'employee', name: 'Jane Smith' },
+            mike: { username: 'mike', password: 'mike123', role: 'employee', name: 'Mike Johnson' },
+            sarah: { username: 'sarah', password: 'sarah123', role: 'employee', name: 'Sarah Williams' }
+        };
+
+        // Load tasks from localStorage
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('tasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            }
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            const user = users[username];
+
+            if (user && user.password === password && user.role === role) {
+                currentUser = user;
+                showDashboard(role);
+            } else {
+                alert('Invalid credentials or role selection!');
+            }
+        });
+
+        // Show appropriate dashboard
+        function showDashboard(role) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            
+            if (role === 'admin') {
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                document.getElementById('adminUsername').textContent = currentUser.name;
+                displayAdminTasks();
+            } else {
+                document.getElementById('employeeDashboard').classList.remove('hidden');
+                document.getElementById('employeeUsername').textContent = currentUser.name;
+                displayEmployeeTasks();
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('employeeDashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Task form handler
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const task = {
+                id: Date.now(),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                assignedTo: document.getElementById('assignedTo').value,
+                dueDate: document.getElementById('taskDate').value,
+                createdBy: currentUser.username,
+                createdAt: new Date().toISOString()
+            };
+
+            tasks.push(task);
+            saveTasks();
+            displayAdminTasks();
+            
+            // Reset form
+            document.getElementById('taskForm').reset();
+            
+            alert('Task added successfully!');
+        });
+
+        // Display all tasks for admin
+        function displayAdminTasks() {
+            const tasksList = document.getElementById('adminTasksList');
+            
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<div class="no-tasks">No tasks created yet. Create your first task above!</div>';
+                return;
+            }
+
+            const employeeNames = {
+                john: 'John Doe',
+                jane: 'Jane Smith',
+                mike: 'Mike Johnson',
+                sarah: 'Sarah Williams'
+            };
+
+            tasksList.innerHTML = tasks.map(task => `
+                <div class="task-card">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-description">${task.description}</div>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                    <div class="task-meta">
+                        <span>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                            </svg>
+                            <span class="employee-badge">${employeeNames[task.assignedTo]}</span>
+                        </span>
+                        <span>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                            </svg>
+                            <span class="date-badge">${formatDate(task.dueDate)}</span>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display tasks for employee
+        function displayEmployeeTasks() {
+            const tasksList = document.getElementById('employeeTasksList');
+            const myTasks = tasks.filter(task => task.assignedTo === currentUser.username);
+            
+            if (myTasks.length === 0) {
+                tasksList.innerHTML = '<div class="no-tasks">No tasks assigned to you yet.</div>';
+                return;
+            }
+
+            tasksList.innerHTML = myTasks.map(task => `
+                <div class="task-card">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-description">${task.description}</div>
+                    <div class="task-meta">
+                        <span>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                            </svg>
+                            <span class="date-badge">Due: ${formatDate(task.dueDate)}</span>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete task
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(task => task.id !== taskId);
+                saveTasks();
+                displayAdminTasks();
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('taskDate').setAttribute('min', today);
+            loadTasks();
+        });
+    </script>
+</body>
+</html>

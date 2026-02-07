@@ -328,10 +328,21 @@
                         <label for="assignedTo">Assign to Employee *</label>
                         <select id="assignedTo" required>
                             <option value="">Select employee...</option>
-                            <option value="john">John Doe</option>
-                            <option value="jane">Jane Smith</option>
-                            <option value="mike">Mike Johnson</option>
-                            <option value="sarah">Sarah Williams</option>
+                            <option value="Person">Jan Person Garcia</option>
+                            <option value="Rose">April Rose Bayer</option>
+                            <option value="Divine">Divine Silva</option>
+                            <option value="Liza">Liza Abregana</option>
+                            <option value="Justine">Justine Querubin</option>
+                            <option value="Ezra">Ezra Xamel Tujan</option>
+                            <option value="Claire">Claire Cabiluna</option>
+                            <option value="Jenny">Jenny Matarong</option>
+                            <option value="Chrystal">Chrystal Damiles</option>
+                            <option value="Wendy">Wendy Blue Hinlong</option>
+                            <option value="Lalaine">Lalaine Unabia</option>
+                            <option value="Danica">Danica Caballero</option>
+                            <option value="Marco">Marco Reubal</option>
+                            <option value="Ana">Ana Lhoryn Valente</option>
+                            
                         </select>
                     </div>
                     <div class="form-group">
@@ -375,11 +386,22 @@
 
         // Demo users
         const users = {
-            admin: { username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User' },
-            john: { username: 'john', password: 'john123', role: 'employee', name: 'John Doe' },
-            jane: { username: 'jane', password: 'jane123', role: 'employee', name: 'Jane Smith' },
-            mike: { username: 'mike', password: 'mike123', role: 'employee', name: 'Mike Johnson' },
-            sarah: { username: 'sarah', password: 'sarah123', role: 'employee', name: 'Sarah Williams' }
+            Rojen: { username: 'Rojen', password: 'Rojen123', role: 'admin', name: 'Admin User' },
+            Person: { username: 'Person', password: 'Person', role: 'employee', name: 'Person' },
+            Rose: { username: 'Rose', password: 'Rose', role: 'employee', name: 'Rose' },
+            Divine: { username: 'Divine', password: 'Divine', role: 'employee', name: 'Divine' },
+            Liza: { username: 'Liza', password: 'Liza', role: 'employee', name: 'Liza' },
+              Justine: { username: 'Justine', password: 'Justine', role: 'employee', name: 'Justine' },
+              Ezra: { username: 'Ezra', password: 'Ezra', role: 'employee', name: 'Ezra' },
+              Claire: { username: 'Claire', password: 'Claire', role: 'employee', name: 'Claire' },
+              Jenny: { username: 'Jenny', password: 'Jenny', role: 'employee', name: 'Jenny' },
+              Chrystal: { username: 'Chrystal', password: 'Chrystal', role: 'employee', name: 'Chrystal' },
+              Wendy: { username: 'Wendy', password: 'Wendy', role: 'employee', name: 'Wendy' },
+              Lalaine: { username: 'Lalaine', password: 'Lalaine', role: 'employee', name: 'Lalaine' },
+              Danica: { username: 'Danica', password: 'Danica', role: 'employee', name: 'Danica' },
+              Marco: { username: 'Marco', password: 'Marco', role: 'employee', name: 'Marco' },
+              Ana: { username: 'Ana', password: 'Ana', role: 'employee', name: 'Ana' },
+            
         };
 
         // Load tasks from localStorage
@@ -471,10 +493,21 @@
             }
 
             const employeeNames = {
-                john: 'John Doe',
-                jane: 'Jane Smith',
-                mike: 'Mike Johnson',
-                sarah: 'Sarah Williams'
+                
+                Person: 'Jan Person Garcia',
+                Rose: 'April Rose Bayer',
+                Divine: 'Divine Silva',
+                Liza: 'Liza Abregana',
+                Justine: 'Justine Querubin',
+                Ezra: 'Ezra Xamel Tujan',
+                Claire: 'Claire Cabiluna',
+                Jenny: 'Jenny Matarong',
+                Chrystal: 'Chrystal Damiles',
+                Wendy: 'Wendy Blue Hinlong',
+                Lalaine: 'Lalaine Unabia',
+                Danica: 'Danica Caballero',
+                Marco: 'Marco Reubal',
+                Ana: 'Ana Lhoryn Valente',
             };
 
             tasksList.innerHTML = tasks.map(task => `

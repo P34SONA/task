@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,6 +132,35 @@
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .role-badge {
@@ -301,6 +331,10 @@
         <div class="header">
             <h1>📋 Admin Dashboard</h1>
             <div class="user-info">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    LIVE
+                </div>
                 <span class="role-badge">ADMIN</span>
                 <span id="adminUsername"></span>
                 <button class="btn btn-secondary" onclick="logout()" style="width: auto; padding: 8px 20px;">Logout</button>
@@ -323,7 +357,7 @@
                         <label for="assignedTo">Assign to Employee *</label>
                         <select id="assignedTo" required>
                             <option value="">Select employee...</option>
-                            <option value="Person">Jan Person Garcia</option>
+                           <option value="Person">Jan Person Garcia</option>
                             <option value="Rose">April Rose Bayer</option>
                             <option value="Divine">Divine Silva</option>
                             <option value="Liza">Liza Abregana</option>
@@ -337,7 +371,7 @@
                             <option value="Danica">Danica Caballero</option>
                             <option value="Marco">Marco Reubal</option>
                             <option value="Ana">Ana Lhoryn Valente</option>
-                            
+
                         </select>
                     </div>
                     <div class="form-group">
@@ -360,6 +394,10 @@
         <div class="header">
             <h1>📋 My Tasks</h1>
             <div class="user-info">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    LIVE
+                </div>
                 <span class="role-badge">EMPLOYEE</span>
                 <span id="employeeUsername"></span>
                 <button class="btn btn-secondary" onclick="logout()" style="width: auto; padding: 8px 20px;">Logout</button>
@@ -378,6 +416,7 @@
         // Sample data structure
         let tasks = [];
         let currentUser = null;
+        let pollInterval = null;
 
         // Demo users
         const users = {
@@ -395,25 +434,59 @@
               Lalaine: { username: 'Lalaine', password: 'Lalaine', role: 'employee', name: 'Lalaine' },
               Danica: { username: 'Danica', password: 'Danica', role: 'employee', name: 'Danica' },
               Marco: { username: 'Marco', password: 'Marco', role: 'employee', name: 'Marco' },
-              Ana: { username: 'Ana', password: 'Ana', role: 'employee', name: 'Ana' },
-            
+              Ana: { username: 'Ana', password: 'Ana', role: 'employee', name: 'Ana' }
         };
 
-        // Load tasks from localStorage
-        function loadTasks() {
-            const savedTasks = localStorage.getItem('tasks');
-            if (savedTasks) {
-                tasks = JSON.parse(savedTasks);
+        // Load tasks from shared storage
+        async function loadTasks() {
+            try {
+                const result = await window.storage.get('shared-tasks', true);
+                if (result && result.value) {
+                    tasks = JSON.parse(result.value);
+                } else {
+                    tasks = [];
+                }
+            } catch (error) {
+                console.log('No existing tasks found, starting fresh');
+                tasks = [];
             }
         }
 
-        // Save tasks to localStorage
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+        // Save tasks to shared storage
+        async function saveTasks() {
+            try {
+                await window.storage.set('shared-tasks', JSON.stringify(tasks), true);
+            } catch (error) {
+                console.error('Error saving tasks:', error);
+                alert('Failed to save task. Please try again.');
+            }
+        }
+
+        // Start polling for updates
+        function startPolling() {
+            // Poll every 2 seconds for updates
+            pollInterval = setInterval(async () => {
+                await loadTasks();
+                if (currentUser) {
+                    if (currentUser.role === 'admin') {
+                        displayAdminTasks();
+                    } else {
+                        displayEmployeeTasks();
+                    }
+                }
+            }, 2000);
+        }
+
+        // Stop polling
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
         }
 
         // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
@@ -424,7 +497,9 @@
 
             if (user && user.password === password && user.role === role) {
                 currentUser = user;
+                await loadTasks();
                 showDashboard(role);
+                startPolling(); // Start real-time updates
             } else {
                 alert('Invalid credentials or role selection!');
             }
@@ -447,6 +522,7 @@
 
         // Logout
         function logout() {
+            stopPolling(); // Stop real-time updates
             currentUser = null;
             document.getElementById('adminDashboard').classList.add('hidden');
             document.getElementById('employeeDashboard').classList.add('hidden');
@@ -455,7 +531,7 @@
         }
 
         // Task form handler
-        document.getElementById('taskForm').addEventListener('submit', function(e) {
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const task = {
@@ -469,13 +545,13 @@
             };
 
             tasks.push(task);
-            saveTasks();
+            await saveTasks();
             displayAdminTasks();
             
             // Reset form
             document.getElementById('taskForm').reset();
             
-            alert('Task added successfully!');
+            alert('Task added successfully and shared with all users!');
         });
 
         // Display all tasks for admin
@@ -488,7 +564,6 @@
             }
 
             const employeeNames = {
-                
                 Person: 'Jan Person Garcia',
                 Rose: 'April Rose Bayer',
                 Divine: 'Divine Silva',
@@ -559,10 +634,10 @@
         }
 
         // Delete task
-        function deleteTask(taskId) {
+        async function deleteTask(taskId) {
             if (confirm('Are you sure you want to delete this task?')) {
                 tasks = tasks.filter(task => task.id !== taskId);
-                saveTasks();
+                await saveTasks();
                 displayAdminTasks();
             }
         }
@@ -581,7 +656,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('taskDate').setAttribute('min', today);
-            loadTasks();
         });
     </script>
 </body>

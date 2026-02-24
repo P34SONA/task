@@ -4,345 +4,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Task Management — Team Task Manager</title>
+<title>TaskFlow — Team Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f14;
-    --surface: #161820;
-    --surface2: #1e2028;
-    --border: #2a2d3a;
-    --accent: #e8c547;
-    --accent2: #4fd1c5;
-    --text: #eef0f6;
-    --muted: #7a7f94;
-    --red: #f87171;
-    --green: #4ade80;
-    --radius: 12px;
+    --bg: #0d0f14; --surface: #161820; --surface2: #1e2028; --border: #2a2d3a;
+    --accent: #e8c547; --accent2: #4fd1c5; --text: #eef0f6; --muted: #7a7f94;
+    --red: #f87171; --green: #4ade80; --purple: #a78bfa; --radius: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
-  
+
   /* LOGIN */
   #loginScreen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(ellipse at 30% 50%, #1a1f2e 0%, #0d0f14 70%);
-    position: relative;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 30% 50%, #1a1f2e 0%, #0d0f14 70%); position: relative;
   }
   #loginScreen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(232,197,71,0.02) 40px, rgba(232,197,71,0.02) 41px),
-                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(232,197,71,0.02) 40px, rgba(232,197,71,0.02) 41px);
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(232,197,71,.02) 40px,rgba(232,197,71,.02) 41px),
+                repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(232,197,71,.02) 40px,rgba(232,197,71,.02) 41px);
   }
   .login-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 420px;
-    position: relative;
-    z-index: 1;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 48px 40px; width: 100%; max-width: 420px;
+    position: relative; z-index: 1; box-shadow: 0 40px 80px rgba(0,0,0,.5);
   }
-  .login-logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-  .login-sub { color: var(--muted); font-size: 14px; margin-bottom: 36px; }
+  .login-logo { font-family: 'DM Serif Display',serif; font-size: 28px; color: var(--accent); margin-bottom: 8px; }
+  .login-sub  { color: var(--muted); font-size: 14px; margin-bottom: 36px; }
   .form-group { margin-bottom: 20px; }
-  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  input[type=text], input[type=password], select, textarea {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    padding: 12px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
+  label { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  input[type=text], input[type=date], select {
+    width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    color:var(--text); padding:12px 16px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s;
   }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  select option { background: var(--surface2); }
+  input:focus, select:focus { border-color:var(--accent); }
+  select option { background:var(--surface2); }
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: var(--radius);
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+    display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
+    border-radius:var(--radius); border:none; font-family:'DM Sans',sans-serif;
+    font-size:14px; font-weight:600; cursor:pointer; transition:all .2s;
   }
-  .btn-primary { background: var(--accent); color: #0d0f14; }
-  .btn-primary:hover { background: #f0d060; transform: translateY(-1px); }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); }
-  .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
-  .btn-danger:hover { background: rgba(248,113,113,0.25); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-full { width: 100%; justify-content: center; }
-  .error-msg { color: var(--red); font-size: 13px; margin-top: 8px; display: none; }
+  .btn-primary  { background:var(--accent); color:#0d0f14; }
+  .btn-primary:hover { background:#f0d060; transform:translateY(-1px); }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .btn-secondary:hover { border-color:var(--accent); }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); padding:8px 14px; font-size:12px; }
+  .btn-ghost:hover { color:var(--text); border-color:var(--muted); }
+  .btn-ghost.af { background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+  .btn-full { width:100%; justify-content:center; }
+  .error-msg { color:var(--red); font-size:13px; margin-top:8px; display:none; }
 
-  /* APP */
-  #app { display: none; }
+  /* SHELL */
+  #app { display:none; }
   .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:16px 32px; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:100;
   }
-  .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--accent); }
-  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo { font-family:'DM Serif Display',serif; font-size:22px; color:var(--accent); }
+  .topbar-right { display:flex; align-items:center; gap:16px; }
   .user-badge {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 14px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:100px;
+    padding:6px 14px; font-size:13px; display:flex; align-items:center; gap:8px;
   }
-  .user-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
-  .tabs {
-    display: flex;
-    gap: 2px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-  }
+  .user-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+  .tabs { display:flex; gap:2px; background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; }
   .tab {
-    padding: 14px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    font-family: 'DM Sans', sans-serif;
+    padding:14px 20px; font-size:14px; font-weight:500; color:var(--muted);
+    cursor:pointer; border-bottom:2px solid transparent; transition:all .2s;
+    background:none; border-top:none; border-left:none; border-right:none; font-family:'DM Sans',sans-serif;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab:disabled { opacity: 0.3; cursor: not-allowed; }
-  .main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab:disabled { opacity:.3; cursor:not-allowed; }
+  .main { padding:32px; max-width:1200px; margin:0 auto; }
 
-  /* ADMIN */
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    margin-bottom: 24px;
-    color: var(--text);
-  }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  /* LAYOUT */
+  .section-title { font-family:'DM Serif Display',serif; font-size:22px; margin-bottom:4px; color:var(--text); }
+  .section-sub   { font-size:13px; color:var(--muted); margin-bottom:20px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+  .card-title { font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:20px; }
+  .tag-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
   .tag {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 4px 12px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:100px;
+    padding:4px 12px; font-size:12px; font-family:'DM Mono',monospace;
+    display:flex; align-items:center; gap:6px;
   }
-  .tag .remove { cursor: pointer; color: var(--red); font-size: 14px; line-height: 1; }
-  .input-row { display: flex; gap: 8px; }
-  .input-row input { flex: 1; }
+  .tag .remove { cursor:pointer; color:var(--red); font-size:14px; line-height:1; }
+  .input-row { display:flex; gap:8px; }
+  .input-row input { flex:1; }
+  .sep { border:none; border-top:1px solid var(--border); margin:28px 0; }
 
-  /* ASSIGN SECTION */
-  .assign-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 24px;
+  /* ASSIGN */
+  .assign-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; margin-bottom:24px; }
+  .assign-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
+  .emp-cbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .ecb {
+    display:flex; align-items:center; gap:8px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius); padding:8px 14px;
+    cursor:pointer; transition:all .15s; user-select:none;
   }
-  .assign-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .employee-checkboxes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-  .emp-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
+  .ecb:hover { border-color:var(--accent); }
+  .ecb.sel { background:rgba(232,197,71,.1); border-color:var(--accent); }
+  .ecb.dis { opacity:.4; cursor:not-allowed; pointer-events:none; }
+  .cki {
+    width:16px; height:16px; border-radius:4px; border:1px solid var(--border); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; font-size:10px; transition:all .15s; flex-shrink:0;
   }
-  .emp-checkbox:hover { border-color: var(--accent); }
-  .emp-checkbox.selected { background: rgba(232,197,71,0.1); border-color: var(--accent); }
-  .emp-checkbox.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-  .emp-checkbox input[type=checkbox] { display: none; }
-  .check-icon { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.15s; }
-  .emp-checkbox.selected .check-icon { background: var(--accent); border-color: var(--accent); color: #0d0f14; }
+  .ecb.sel .cki { background:var(--accent); border-color:var(--accent); color:#0d0f14; }
 
-  /* TASK TABLE */
-  .table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    background: var(--surface2);
-    padding: 14px 20px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border);
+  /* FILTER BAR */
+  .fbar {
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px 20px; margin-bottom:16px;
+    display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;
   }
-  td {
-    padding: 14px 20px;
-    font-size: 14px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  .emp-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .emp-pill {
-    background: rgba(79,209,197,0.1);
-    border: 1px solid rgba(79,209,197,0.3);
-    border-radius: 100px;
-    padding: 3px 10px;
-    font-size: 12px;
-    color: var(--accent2);
-    font-family: 'DM Mono', monospace;
-  }
-  .date-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .fbar label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:600; margin-bottom:5px; }
+  .fbar input[type=date], .fbar select { padding:9px 12px; font-size:13px; width:150px; }
+  .fbar-title { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; align-self:center; }
+  .fpresets { display:flex; gap:6px; flex-wrap:wrap; }
+  .fg { display:flex; flex-direction:column; }
 
-  /* EMPLOYEE VIEW - CARDS */
-  #empView { display: none; }
-  .emp-header { margin-bottom: 32px; }
-  .emp-header h2 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 4px; }
-  .emp-header p { color: var(--muted); font-size: 14px; }
-  .tasks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-  .task-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-  }
-  .task-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-  .task-card-header {
-    background: var(--surface2);
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-  .task-card-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
-  .task-card-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-  .task-card-body { padding: 20px; }
-  .assigned-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .assigned-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-  .assigned-name {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 5px 12px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .assigned-name.is-me {
-    background: rgba(232,197,71,0.1);
-    border-color: rgba(232,197,71,0.4);
-    color: var(--accent);
-    font-weight: 600;
-  }
-  .me-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-  .task-type-badge {
-    font-size: 11px;
-    font-weight: 600;
-    font-family: 'DM Mono', monospace;
-    padding: 4px 10px;
-    border-radius: 100px;
-    background: rgba(232,197,71,0.1);
-    border: 1px solid rgba(232,197,71,0.3);
-    color: var(--accent);
-  }
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 20px;
-    font-size: 14px;
-    z-index: 9999;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  }
-  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-  .separator { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-  .duty-date-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .future-badge {
-    background: rgba(79,209,197,0.1);
-    border: 1px solid rgba(79,209,197,0.3);
-    color: var(--accent2);
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    padding: 3px 8px;
-    border-radius: 100px;
-    margin-left: 6px;
-  }
+  /* TABLE */
+  .table-wrap { overflow-x:auto; border-radius:16px; border:1px solid var(--border); margin-bottom:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:var(--surface2); padding:14px 20px; text-align:left; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; font-size:14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,.02); }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; }
+  .pill { background:rgba(79,209,197,.1); border:1px solid rgba(79,209,197,.3); border-radius:100px; padding:3px 10px; font-size:12px; color:var(--accent2); font-family:'DM Mono',monospace; }
+  .pill.past { background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:var(--purple); }
+  .db { font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); }
+  .badge-future { background:rgba(79,209,197,.1); border:1px solid rgba(79,209,197,.3); color:var(--accent2); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
+  .badge-past   { background:rgba(167,139,250,.1); border:1px solid rgba(167,139,250,.3); color:var(--purple); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
+  .badge-today  { background:rgba(74,222,128,.1);  border:1px solid rgba(74,222,128,.3);  color:var(--green); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
 
-  @media (max-width: 768px) {
-    .grid-2 { grid-template-columns: 1fr; }
-    .assign-grid { grid-template-columns: 1fr; }
-    .main { padding: 20px; }
-    .tabs { padding: 0 16px; overflow-x: auto; }
-    .topbar { padding: 12px 16px; }
+  /* HISTORY STATS */
+  .hist-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .count-badge { background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:12px; font-family:'DM Mono',monospace; color:var(--muted); }
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; }
+  .stat-num { font-family:'DM Serif Display',serif; font-size:30px; color:var(--accent); margin-bottom:4px; }
+  .stat-lbl { font-size:12px; color:var(--muted); }
+
+  /* EMP CARDS */
+  #empView { display:none; }
+  .emp-hdr { margin-bottom:24px; }
+  .emp-hdr h2 { font-family:'DM Serif Display',serif; font-size:28px; margin-bottom:4px; }
+  .emp-hdr p  { color:var(--muted); font-size:14px; }
+  .sub-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .stab {
+    padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500;
+    font-family:'DM Sans',sans-serif; cursor:pointer; transition:all .2s;
+    border:1px solid var(--border); background:var(--surface2); color:var(--muted);
+  }
+  .stab:hover { color:var(--text); }
+  .stab.active { background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); }
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .tcard {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; overflow:hidden; transition:transform .2s,box-shadow .2s;
+  }
+  .tcard:hover { transform:translateY(-3px); box-shadow:0 20px 40px rgba(0,0,0,.3); }
+  .tcard.past { border-color:rgba(167,139,250,.2); opacity:.85; }
+  .tcard-hd { background:var(--surface2); padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; }
+  .tcard-name { font-weight:600; font-size:16px; margin-bottom:4px; }
+  .tcard-date { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px; }
+  .tcard-bd { padding:20px; }
+  .asgn-lbl { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+  .asgn-grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .aname { background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:5px 12px; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .aname.me { background:rgba(232,197,71,.1); border-color:rgba(232,197,71,.4); color:var(--accent); font-weight:600; }
+  .me-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+  .tbadge { font-size:11px; font-weight:600; font-family:'DM Mono',monospace; padding:4px 10px; border-radius:100px; background:rgba(232,197,71,.1); border:1px solid rgba(232,197,71,.3); color:var(--accent); }
+  .tbadge.past { background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:var(--purple); }
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+  .empty .ico { font-size:48px; margin-bottom:16px; }
+  .empty h3 { font-size:18px; color:var(--text); margin-bottom:8px; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 20px; font-size:14px; z-index:9999; animation:sli .3s ease; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+  @keyframes sli { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+  @media(max-width:768px){
+    .grid-2{grid-template-columns:1fr}
+    .assign-grid{grid-template-columns:1fr}
+    .main{padding:16px}
+    .tabs{padding:0 12px;overflow-x:auto}
+    .topbar{padding:12px 16px}
+    .fbar input[type=date],.fbar select{width:100%}
   }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">TaskFlow</div>
@@ -359,432 +218,505 @@
 <!-- APP -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">Task Management</div>
+    <div class="topbar-logo">TaskFlow</div>
     <div class="topbar-right">
-      <div class="user-badge">
-        <div class="user-dot"></div>
-        <span id="currentUserDisplay">—</span>
-      </div>
-      <button class="btn btn-secondary" onclick="logout()">Sign Out</button>
+      <div class="user-badge"><div class="user-dot"></div><span id="curUserDisp">—</span></div>
+      <button class="btn btn-secondary" onclick="logout()" style="padding:8px 16px;font-size:13px;">Sign Out</button>
     </div>
   </div>
-
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">Admin</button>
-    <button class="tab active" id="tabEmployee" onclick="switchTab('employee')">Employee View</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Employee View</button>
   </div>
 
-  <!-- ADMIN TAB -->
+  <!-- ─── ADMIN ─── -->
   <div id="adminView" class="main" style="display:none;">
+
     <div class="grid-2">
-      <!-- Add Employees -->
       <div class="card">
         <div class="card-title">👤 Manage Employees</div>
         <div class="input-row">
-          <input type="text" id="empInput" placeholder="Employee name..." onkeydown="if(event.key==='Enter')addEmployee()">
+          <input type="text" id="empInput" placeholder="Employee name…" onkeydown="if(event.key==='Enter')addEmployee()">
           <button class="btn btn-primary" onclick="addEmployee()">Add</button>
         </div>
         <div class="tag-list" id="empList"></div>
       </div>
-      <!-- Add Tasks -->
       <div class="card">
         <div class="card-title">📋 Manage Tasks</div>
         <div class="input-row">
-          <input type="text" id="taskInput" placeholder="Task name (e.g. SDP, Delta)..." onkeydown="if(event.key==='Enter')addTask()">
+          <input type="text" id="taskInput" placeholder="Task name (SDP, Delta…)" onkeydown="if(event.key==='Enter')addTask()">
           <button class="btn btn-primary" onclick="addTask()">Add</button>
         </div>
         <div class="tag-list" id="taskList"></div>
       </div>
     </div>
 
-    <hr class="separator">
+    <hr class="sep">
 
-    <!-- Assign Tasks -->
+    <!-- ASSIGN FORM -->
     <div class="assign-card">
-      <h3 class="section-title" style="margin-bottom:20px;">Assign Task to Employees</h3>
+      <div class="section-title">Assign Task</div>
+      <div class="section-sub">Pick a task, duty date, then select employees.</div>
       <div class="assign-grid">
         <div>
-          <label>Select Task</label>
-          <select id="assignTask" style="margin-top:8px;">
-            <option value="">— Choose task —</option>
-          </select>
+          <label>Task</label>
+          <select id="assignTask" style="margin-top:8px;"><option value="">— Choose —</option></select>
         </div>
         <div>
           <label>Date of Duty</label>
           <input type="date" id="assignDate" style="margin-top:8px;">
         </div>
         <div style="display:flex;align-items:flex-end;">
-          <button class="btn btn-primary" onclick="assignTask()" style="margin-top:8px;width:100%;justify-content:center;">Assign</button>
+          <button class="btn btn-primary" onclick="doAssign()" style="width:100%;justify-content:center;margin-top:8px;">Assign</button>
         </div>
       </div>
-      <label>Select Employees</label>
-      <div class="employee-checkboxes" id="empCheckboxes" style="margin-top:8px;"></div>
+      <label>Employees</label>
+      <div class="emp-cbs" id="empCbs" style="margin-top:8px;"></div>
     </div>
 
-    <hr class="separator">
+    <hr class="sep">
 
-    <!-- Assignment Table -->
-    <h3 class="section-title">Current Assignments</h3>
-    <div class="table-wrap">
-      <table id="assignTable">
-        <thead>
-          <tr>
-            <th>Task</th>
-            <th>Date of Duty</th>
-            <th>Date Assigned</th>
-            <th>Assigned Employees</th>
-          </tr>
-        </thead>
-        <tbody id="assignTableBody"></tbody>
+    <!-- CURRENT ASSIGNMENTS -->
+    <div class="hist-header">
+      <div>
+        <div class="section-title">Current &amp; Upcoming Assignments</div>
+        <div class="section-sub">Today and future duty dates.</div>
+      </div>
+      <span class="count-badge" id="curCount">0 records</span>
+    </div>
+
+    <div class="fbar">
+      <span class="fbar-title">🔍 Filter</span>
+      <div class="fg"><label>From</label><input type="date" id="aFrom"></div>
+      <div class="fg"><label>To</label>  <input type="date" id="aTo"></div>
+      <div class="fg"><label>Task</label><select id="aTask" style="width:140px;"><option value="">All</option></select></div>
+      <div class="fpresets">
+        <button class="btn btn-ghost af" id="apAll"   onclick="aPreset('all')">All</button>
+        <button class="btn btn-ghost"    id="apToday" onclick="aPreset('today')">Today</button>
+        <button class="btn btn-ghost"    id="apWeek"  onclick="aPreset('week')">This Week</button>
+        <button class="btn btn-ghost"    id="apMonth" onclick="aPreset('month')">This Month</button>
+      </div>
+      <button class="btn btn-ghost" onclick="aClear()">Clear</button>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:40px;">
+      <table>
+        <thead><tr><th>Task</th><th>Date of Duty</th><th>Date Assigned</th><th>Assigned Employees</th></tr></thead>
+        <tbody id="curTbody"></tbody>
       </table>
     </div>
+
+    <hr class="sep">
+
+    <!-- PREVIOUS TASKS HISTORY -->
+    <div class="hist-header">
+      <div>
+        <div class="section-title">📅 Previous Tasks History</div>
+        <div class="section-sub">All past assignments with date range search.</div>
+      </div>
+      <span class="count-badge" id="histCount">0 records</span>
+    </div>
+
+    <div class="stats-row" id="histStats"></div>
+
+    <div class="fbar">
+      <span class="fbar-title">🔍 Filter History</span>
+      <div class="fg"><label>From</label><input type="date" id="hFrom"></div>
+      <div class="fg"><label>To</label>  <input type="date" id="hTo"></div>
+      <div class="fg"><label>Task</label><select id="hTask" style="width:130px;"><option value="">All</option></select></div>
+      <div class="fg"><label>Employee</label><select id="hEmp" style="width:130px;"><option value="">All</option></select></div>
+      <div class="fpresets">
+        <button class="btn btn-ghost" id="hp7"   onclick="hPreset(7)">Last 7 days</button>
+        <button class="btn btn-ghost" id="hp30"  onclick="hPreset(30)">Last 30 days</button>
+        <button class="btn btn-ghost" id="hpAll" onclick="hPreset(0)">All History</button>
+      </div>
+      <button class="btn btn-ghost" onclick="hClear()">Clear</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Task</th><th>Date of Duty</th><th>Date Assigned</th><th>Assigned Employees</th></tr></thead>
+        <tbody id="histTbody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /adminView -->
+
+  <!-- ─── EMPLOYEE VIEW ─── -->
+  <div id="empView" class="main">
+    <div class="emp-hdr">
+      <h2 id="empGreet">Hello! 👋</h2>
+      <p>Browse all task assignments across the team.</p>
+    </div>
+
+    <div class="sub-tabs">
+      <button class="stab active" id="stCur"  onclick="switchSub('current')">📌 Current &amp; Upcoming</button>
+      <button class="stab"        id="stHist" onclick="switchSub('history')">🕓 Previous Tasks</button>
+    </div>
+
+    <!-- Current filter -->
+    <div class="fbar" id="efCurBar">
+      <span class="fbar-title">Filter</span>
+      <div class="fg"><label>From</label><input type="date" id="efFrom"></div>
+      <div class="fg"><label>To</label>  <input type="date" id="efTo"></div>
+      <div class="fg"><label>Task</label><select id="efTask" style="width:130px;padding:9px 12px;font-size:13px;"><option value="">All</option></select></div>
+      <div class="fpresets">
+        <button class="btn btn-ghost af" id="efAll"   onclick="efPreset('all')">All</button>
+        <button class="btn btn-ghost"    id="efToday" onclick="efPreset('today')">Today</button>
+        <button class="btn btn-ghost"    id="efWeek"  onclick="efPreset('week')">This Week</button>
+      </div>
+      <button class="btn btn-ghost" onclick="efClear()">Clear</button>
+    </div>
+
+    <!-- History filter -->
+    <div class="fbar" id="efHistBar" style="display:none;">
+      <span class="fbar-title">Filter History</span>
+      <div class="fg"><label>From</label><input type="date" id="ehFrom"></div>
+      <div class="fg"><label>To</label>  <input type="date" id="ehTo"></div>
+      <div class="fg"><label>Task</label><select id="ehTask" style="width:130px;padding:9px 12px;font-size:13px;"><option value="">All</option></select></div>
+      <div class="fpresets">
+        <button class="btn btn-ghost" onclick="ehPreset(7)">Last 7 days</button>
+        <button class="btn btn-ghost" onclick="ehPreset(30)">Last 30 days</button>
+        <button class="btn btn-ghost" onclick="ehPreset(0)">All</button>
+      </div>
+      <button class="btn btn-ghost" onclick="ehClear()">Clear</button>
+    </div>
+
+    <div class="cards-grid" id="empCards"></div>
   </div>
 
-  <!-- EMPLOYEE TAB -->
-  <div id="empView" class="main">
-    <div class="emp-header">
-      <h2 id="empGreeting">Hello!</h2>
-      <p>Here are all current task assignments across the team.</p>
-    </div>
-    <div class="tasks-grid" id="empTaskCards"></div>
-  </div>
-</div>
+</div><!-- /app -->
 
 <script>
-// ─── STORAGE ───────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'taskflow_data_v3';
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { employees: [], tasks: [], assignments: [] };
-}
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-// Sync across tabs in real time
-window.addEventListener('storage', (e) => {
-  if (e.key === STORAGE_KEY) {
-    const fresh = loadData();
-    state.employees = fresh.employees;
-    state.tasks = fresh.tasks;
-    state.assignments = fresh.assignments;
-    renderAll();
-  }
-});
+// ─── PERSIST ───────────────────────────────────────────────────────────────
+const SK = 'taskflow_v5';
+function load() { try { const r=localStorage.getItem(SK); return r?JSON.parse(r):{employees:[],tasks:[],assignments:[]}; } catch(e){return{employees:[],tasks:[],assignments:[]};} }
+function save() { localStorage.setItem(SK, JSON.stringify(S)); }
+window.addEventListener('storage', e => { if(e.key===SK){ Object.assign(S,load()); renderAll(); } });
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
-let state = loadData();
-let currentUser = null;
-let isAdmin = false;
-let currentTab = 'employee';
+let S = load(), curUser=null, isAdmin=false, tab='employee', sub='current';
+
+// filter objects
+const af  = {from:'',to:'',task:''};
+const hf  = {from:'',to:'',task:'',emp:''};
+const ef  = {from:'',to:'',task:''};
+const ehf = {from:'',to:'',task:''};
+
+// ─── DATE UTILS ────────────────────────────────────────────────────────────
+const td  = () => new Date().toISOString().slice(0,10);
+const daysAgo = n => { const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+const daysAhead= n => { const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+function weekStart(){ const d=new Date(); d.setDate(d.getDate()-d.getDay()); return d.toISOString().slice(0,10); }
+function weekEnd()  { const d=new Date(); d.setDate(d.getDate()+(6-d.getDay())); return d.toISOString().slice(0,10); }
+function monthStart(){ const d=new Date(); d.setDate(1); return d.toISOString().slice(0,10); }
+function monthEnd()  { const d=new Date(new Date().getFullYear(),new Date().getMonth()+1,0); return d.toISOString().slice(0,10); }
+function fmtDate(s){ if(!s)return'—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function inRange(d,f,t){ if(f&&d<f)return false; if(t&&d>t)return false; return true; }
+function dateBadge(duty){
+  const t=td();
+  if(duty===t) return '<span class="badge-today">Today</span>';
+  if(duty>t)   return '<span class="badge-future">Upcoming</span>';
+  return           '<span class="badge-past">Past</span>';
+}
 
 // ─── LOGIN ─────────────────────────────────────────────────────────────────
-const ADMIN_NAMES = ['admin', 'Admin', 'ADMIN'];
-
-function doLogin() {
-  const name = document.getElementById('loginName').value.trim();
-  if (!name) return;
-
-  if (ADMIN_NAMES.includes(name.toLowerCase())) {
-    // Admin bypass — allow if admin keyword
-    currentUser = 'Admin';
-    isAdmin = true;
-    startApp();
-    return;
-  }
-
-  const found = state.employees.find(e => e.toLowerCase() === name.toLowerCase());
-  if (!found) {
-    document.getElementById('loginError').style.display = 'block';
-    return;
-  }
-  currentUser = found;
-  isAdmin = false;
-  startApp();
+function doLogin(){
+  const n=document.getElementById('loginName').value.trim();
+  if(!n)return;
+  if(['admin','Admin','ADMIN'].includes(n)){ curUser='Admin'; isAdmin=true; startApp(); return; }
+  const f=S.employees.find(e=>e.toLowerCase()===n.toLowerCase());
+  if(!f){ document.getElementById('loginError').style.display='block'; return; }
+  curUser=f; isAdmin=false; startApp();
 }
+document.getElementById('loginName').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
 
-document.getElementById('loginName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-function startApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('currentUserDisplay').textContent = currentUser;
-
-  if (isAdmin) {
-    document.getElementById('tabAdmin').disabled = false;
-    document.getElementById('tabAdmin').style.opacity = '1';
-    switchTab('admin');
-  } else {
-    document.getElementById('tabAdmin').disabled = true;
-    document.getElementById('tabAdmin').style.opacity = '0.3';
-    document.getElementById('tabAdmin').style.cursor = 'not-allowed';
-    switchTab('employee');
-  }
-
-  // Set today's date as default
-  document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
-
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('curUserDisp').textContent=curUser;
+  const ta=document.getElementById('tabAdmin');
+  if(isAdmin){ ta.disabled=false; ta.style.opacity='1'; switchTab('admin'); }
+  else        { ta.disabled=true;  ta.style.opacity='0.3'; ta.style.cursor='not-allowed'; switchTab('employee'); }
+  document.getElementById('assignDate').value=td();
   renderAll();
 }
-
-function logout() {
-  currentUser = null;
-  isAdmin = false;
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('loginName').value = '';
-  document.getElementById('loginError').style.display = 'none';
+function logout(){
+  curUser=null; isAdmin=false;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginName').value='';
+  document.getElementById('loginError').style.display='none';
 }
 
 // ─── TABS ──────────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  if (tab === 'admin' && !isAdmin) return;
-  currentTab = tab;
-  document.getElementById('tabAdmin').classList.toggle('active', tab === 'admin');
-  document.getElementById('tabEmployee').classList.toggle('active', tab === 'employee');
-  document.getElementById('adminView').style.display = tab === 'admin' ? 'block' : 'none';
-  document.getElementById('empView').style.display = tab === 'employee' ? 'block' : 'none';
-  if (tab === 'employee') renderEmpView();
+function switchTab(t){
+  if(t==='admin'&&!isAdmin)return;
+  tab=t;
+  document.getElementById('tabAdmin').classList.toggle('active',t==='admin');
+  document.getElementById('tabEmp').classList.toggle('active',t==='employee');
+  document.getElementById('adminView').style.display=t==='admin'?'block':'none';
+  document.getElementById('empView').style.display=t==='employee'?'block':'none';
+  if(t==='employee')renderEmpView();
+}
+function switchSub(s){
+  sub=s;
+  document.getElementById('stCur').classList.toggle('active',s==='current');
+  document.getElementById('stHist').classList.toggle('active',s==='history');
+  document.getElementById('efCurBar').style.display=s==='current'?'flex':'none';
+  document.getElementById('efHistBar').style.display=s==='history'?'flex':'none';
+  renderEmpView();
 }
 
-// ─── EMPLOYEES ─────────────────────────────────────────────────────────────
-function addEmployee() {
-  const val = document.getElementById('empInput').value.trim();
-  if (!val) return;
-  if (state.employees.includes(val)) { showToast('Employee already exists'); return; }
-  state.employees.push(val);
-  saveData();
-  document.getElementById('empInput').value = '';
-  renderAll();
-  showToast(`✓ Added employee: ${val}`);
+// ─── DATA OPS ──────────────────────────────────────────────────────────────
+function addEmployee(){
+  const v=document.getElementById('empInput').value.trim(); if(!v)return;
+  if(S.employees.includes(v)){showToast('Already exists');return;}
+  S.employees.push(v); save(); document.getElementById('empInput').value=''; renderAll(); showToast('✓ Added: '+v);
 }
-
-function removeEmployee(name) {
-  state.employees = state.employees.filter(e => e !== name);
-  saveData();
-  renderAll();
+function removeEmployee(n){ S.employees=S.employees.filter(e=>e!==n); save(); renderAll(); }
+function addTask(){
+  const v=document.getElementById('taskInput').value.trim(); if(!v)return;
+  if(S.tasks.includes(v)){showToast('Already exists');return;}
+  S.tasks.push(v); save(); document.getElementById('taskInput').value=''; renderAll(); showToast('✓ Task added: '+v);
 }
-
-// ─── TASKS ─────────────────────────────────────────────────────────────────
-function addTask() {
-  const val = document.getElementById('taskInput').value.trim();
-  if (!val) return;
-  if (state.tasks.includes(val)) { showToast('Task already exists'); return; }
-  state.tasks.push(val);
-  saveData();
-  document.getElementById('taskInput').value = '';
-  renderAll();
-  showToast(`✓ Added task: ${val}`);
-}
-
-function removeTask(name) {
-  state.tasks = state.tasks.filter(t => t !== name);
-  saveData();
-  renderAll();
-}
-
-// ─── ASSIGN ────────────────────────────────────────────────────────────────
-function assignTask() {
-  const task = document.getElementById('assignTask').value;
-  const date = document.getElementById('assignDate').value;
-  if (!task) { showToast('Please select a task'); return; }
-  if (!date) { showToast('Please select a duty date'); return; }
-
-  const selected = [...document.querySelectorAll('.emp-checkbox.selected')].map(el => el.dataset.name);
-  if (selected.length === 0) { showToast('Select at least one employee'); return; }
-
-  // Find existing assignment for this task+date or create new
-  let existing = state.assignments.find(a => a.task === task && a.dutyDate === date);
-  if (existing) {
-    // Merge employees
-    selected.forEach(emp => {
-      if (!existing.employees.includes(emp)) existing.employees.push(emp);
-    });
-  } else {
-    state.assignments.push({
-      id: Date.now(),
-      task,
-      dutyDate: date,
-      dateAssigned: new Date().toISOString().split('T')[0],
-      employees: selected
-    });
-  }
-
-  saveData();
-  renderAll();
-  // Clear selection
-  document.querySelectorAll('.emp-checkbox.selected').forEach(el => el.classList.remove('selected'));
-  showToast(`✓ Task assigned to ${selected.length} employee(s)`);
+function removeTask(n){ S.tasks=S.tasks.filter(t=>t!==n); save(); renderAll(); }
+function doAssign(){
+  const task=document.getElementById('assignTask').value;
+  const date=document.getElementById('assignDate').value;
+  if(!task){showToast('Select a task');return;}
+  if(!date){showToast('Select a duty date');return;}
+  const sel=[...document.querySelectorAll('.ecb.sel')].map(el=>el.dataset.name);
+  if(!sel.length){showToast('Select at least one employee');return;}
+  let ex=S.assignments.find(a=>a.task===task&&a.dutyDate===date);
+  if(ex){ sel.forEach(e=>{ if(!ex.employees.includes(e))ex.employees.push(e); }); }
+  else   { S.assignments.push({id:Date.now(),task,dutyDate:date,dateAssigned:td(),employees:sel}); }
+  save(); renderAll();
+  document.querySelectorAll('.ecb.sel').forEach(el=>el.classList.remove('sel'));
+  showToast('✓ Assigned to '+sel.length+' employee(s)');
 }
 
 // ─── RENDER ────────────────────────────────────────────────────────────────
-function renderAll() {
-  renderEmpList();
-  renderTaskList();
-  renderTaskDropdown();
-  renderEmpCheckboxes();
-  renderAssignTable();
-  if (currentTab === 'employee') renderEmpView();
+function renderAll(){
+  renderEmpList(); renderTaskList(); renderAssignDropdown(); renderEmpCbs();
+  syncFilterDropdowns(); renderCurTable(); renderHistTable();
+  if(tab==='employee')renderEmpView();
 }
 
-function renderEmpList() {
-  const el = document.getElementById('empList');
-  el.innerHTML = state.employees.map(e => `
-    <span class="tag">
-      ${e}
-      <span class="remove" onclick="removeEmployee('${e}')">×</span>
-    </span>`).join('');
+function renderEmpList(){
+  document.getElementById('empList').innerHTML=
+    S.employees.map(e=>`<span class="tag">${e}<span class="remove" onclick="removeEmployee(${JSON.stringify(e)})">×</span></span>`).join('');
+}
+function renderTaskList(){
+  document.getElementById('taskList').innerHTML=
+    S.tasks.map(t=>`<span class="tag" style="background:rgba(232,197,71,.08);border-color:rgba(232,197,71,.25);">${t}<span class="remove" onclick="removeTask(${JSON.stringify(t)})">×</span></span>`).join('');
+}
+function renderAssignDropdown(){
+  const s=document.getElementById('assignTask'),c=s.value;
+  s.innerHTML='<option value="">— Choose —</option>'+S.tasks.map(t=>`<option value="${t}"${t===c?' selected':''}>${t}</option>`).join('');
+}
+function syncFilterDropdowns(){
+  const tOpts='<option value="">All</option>'+S.tasks.map(t=>`<option value="${t}">${t}</option>`).join('');
+  const eOpts='<option value="">All</option>'+S.employees.map(e=>`<option value="${e}">${e}</option>`).join('');
+  ['aTask','hTask','efTask','ehTask'].forEach(id=>{ const el=document.getElementById(id); if(el){const v=el.value;el.innerHTML=tOpts;el.value=v;} });
+  const he=document.getElementById('hEmp'); if(he){const v=he.value;he.innerHTML=eOpts;he.value=v;}
+}
+function renderEmpCbs(){
+  const el=document.getElementById('empCbs');
+  if(!S.employees.length){el.innerHTML='<span style="color:var(--muted);font-size:13px;">No employees added yet.</span>';return;}
+  const task=document.getElementById('assignTask').value;
+  const date=document.getElementById('assignDate').value;
+  el.innerHTML=S.employees.map(e=>{
+    let dis=false;
+    if(task&&date){ const ex=S.assignments.find(a=>a.task===task&&a.dutyDate===date); if(ex&&ex.employees.includes(e))dis=true; }
+    return `<div class="ecb${dis?' dis':''}" data-name="${e}" onclick="toggleEcb(this)">
+      <div class="cki">✓</div><span>${e}</span>${dis?'<span style="font-size:10px;color:var(--muted)">(assigned)</span>':''}
+    </div>`;
+  }).join('');
+}
+function toggleEcb(el){ if(!el.classList.contains('dis'))el.classList.toggle('sel'); }
+
+document.getElementById('assignTask').addEventListener('change',renderEmpCbs);
+document.getElementById('assignDate').addEventListener('change',renderEmpCbs);
+
+// wire filter inputs
+function wireInput(id,obj,key,fn){ const el=document.getElementById(id); if(el)el.addEventListener('change',function(){obj[key]=this.value;fn();}); }
+wireInput('aFrom',af,'from',renderCurTable); wireInput('aTo',af,'to',renderCurTable); wireInput('aTask',af,'task',renderCurTable);
+wireInput('hFrom',hf,'from',renderHistTable); wireInput('hTo',hf,'to',renderHistTable); wireInput('hTask',hf,'task',renderHistTable); wireInput('hEmp',hf,'emp',renderHistTable);
+wireInput('efFrom',ef,'from',renderEmpView); wireInput('efTo',ef,'to',renderEmpView); wireInput('efTask',ef,'task',renderEmpView);
+wireInput('ehFrom',ehf,'from',renderEmpView); wireInput('ehTo',ehf,'to',renderEmpView); wireInput('ehTask',ehf,'task',renderEmpView);
+
+// ─── ADMIN CURRENT TABLE ───────────────────────────────────────────────────
+function renderCurTable(){
+  const tbody=document.getElementById('curTbody'), t=td();
+  let rows=S.assignments.filter(a=>a.dutyDate>=t);
+  if(af.from||af.to) rows=rows.filter(a=>inRange(a.dutyDate,af.from,af.to));
+  if(af.task) rows=rows.filter(a=>a.task===af.task);
+  rows.sort((a,b)=>a.dutyDate.localeCompare(b.dutyDate));
+  document.getElementById('curCount').textContent=rows.length+' record'+(rows.length!==1?'s':'');
+  tbody.innerHTML=rows.length
+    ? rows.map(a=>`<tr>
+        <td><strong>${a.task}</strong></td>
+        <td><span class="db">${fmtDate(a.dutyDate)}</span>${dateBadge(a.dutyDate)}</td>
+        <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
+        <td><div class="pills">${a.employees.map(e=>`<span class="pill">${e}</span>`).join('')}</div></td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No records match.</td></tr>`;
 }
 
-function renderTaskList() {
-  const el = document.getElementById('taskList');
-  el.innerHTML = state.tasks.map(t => `
-    <span class="tag" style="background:rgba(232,197,71,0.08);border-color:rgba(232,197,71,0.25);">
-      ${t}
-      <span class="remove" onclick="removeTask('${t}')">×</span>
-    </span>`).join('');
+// ─── ADMIN HISTORY TABLE ───────────────────────────────────────────────────
+function renderHistTable(){
+  const tbody=document.getElementById('histTbody'), t=td();
+  let rows=S.assignments.filter(a=>a.dutyDate<t);
+  if(hf.from||hf.to) rows=rows.filter(a=>inRange(a.dutyDate,hf.from,hf.to));
+  if(hf.task) rows=rows.filter(a=>a.task===hf.task);
+  if(hf.emp)  rows=rows.filter(a=>a.employees.includes(hf.emp));
+  rows.sort((a,b)=>b.dutyDate.localeCompare(a.dutyDate));
+  document.getElementById('histCount').textContent=rows.length+' record'+(rows.length!==1?'s':'');
+  renderHistStats(rows);
+  tbody.innerHTML=rows.length
+    ? rows.map(a=>`<tr>
+        <td><strong>${a.task}</strong></td>
+        <td><span class="db">${fmtDate(a.dutyDate)}</span><span class="badge-past">Past</span></td>
+        <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
+        <td><div class="pills">${a.employees.map(e=>`<span class="pill past">${e}</span>`).join('')}</div></td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No past records match.</td></tr>`;
+}
+function renderHistStats(rows){
+  const el=document.getElementById('histStats');
+  if(!rows.length){el.innerHTML='';return;}
+  const total=rows.reduce((s,r)=>s+r.employees.length,0);
+  const uEmps=new Set(rows.flatMap(r=>r.employees)).size;
+  const uTasks=new Set(rows.map(r=>r.task)).size;
+  const tf={};
+  rows.forEach(r=>{ tf[r.task]=(tf[r.task]||0)+r.employees.length; });
+  const top=Object.entries(tf).sort((a,b)=>b[1]-a[1])[0];
+  el.innerHTML=`
+    <div class="stat-card"><div class="stat-num">${rows.length}</div><div class="stat-lbl">Past Assignments</div></div>
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Employee-Tasks</div></div>
+    <div class="stat-card"><div class="stat-num">${uEmps}</div><div class="stat-lbl">Employees Involved</div></div>
+    <div class="stat-card"><div class="stat-num">${uTasks}</div><div class="stat-lbl">Unique Tasks</div></div>
+    ${top?`<div class="stat-card"><div class="stat-num" style="font-size:20px;padding-top:6px;">${top[0]}</div><div class="stat-lbl">Top Task</div></div>`:''}
+  `;
 }
 
-function renderTaskDropdown() {
-  const sel = document.getElementById('assignTask');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">— Choose task —</option>' +
-    state.tasks.map(t => `<option value="${t}" ${t===cur?'selected':''}>${t}</option>`).join('');
-}
-
-function renderEmpCheckboxes() {
-  const el = document.getElementById('empCheckboxes');
-  if (state.employees.length === 0) {
-    el.innerHTML = '<span style="color:var(--muted);font-size:13px;">No employees added yet.</span>';
+// ─── EMPLOYEE CARDS ────────────────────────────────────────────────────────
+function renderEmpView(){
+  if(curUser)document.getElementById('empGreet').textContent=`Hello, ${curUser}! 👋`;
+  const el=document.getElementById('empCards'), t=td();
+  let rows;
+  if(sub==='current'){
+    rows=S.assignments.filter(a=>a.dutyDate>=t);
+    if(ef.from||ef.to) rows=rows.filter(a=>inRange(a.dutyDate,ef.from,ef.to));
+    if(ef.task) rows=rows.filter(a=>a.task===ef.task);
+    rows.sort((a,b)=>a.dutyDate.localeCompare(b.dutyDate));
+  } else {
+    rows=S.assignments.filter(a=>a.dutyDate<t);
+    if(ehf.from||ehf.to) rows=rows.filter(a=>inRange(a.dutyDate,ehf.from,ehf.to));
+    if(ehf.task) rows=rows.filter(a=>a.task===ehf.task);
+    rows.sort((a,b)=>b.dutyDate.localeCompare(a.dutyDate));
+  }
+  if(!rows.length){
+    el.innerHTML=`<div class="empty"><div class="ico">${sub==='current'?'📋':'🕓'}</div><h3>${sub==='current'?'No upcoming assignments':'No past assignments found'}</h3><p>${sub==='current'?'Check back later or ask your admin.':'Try a different date range.'}</p></div>`;
     return;
   }
-  el.innerHTML = state.employees.map(e => {
-    const task = document.getElementById('assignTask').value;
-    const date = document.getElementById('assignDate').value;
-    // Disable if already assigned this task on this date
-    let disabled = false;
-    if (task && date) {
-      const existing = state.assignments.find(a => a.task === task && a.dutyDate === date);
-      if (existing && existing.employees.includes(e)) disabled = true;
-    }
-    return `<div class="emp-checkbox ${disabled?'disabled':''}" data-name="${e}" onclick="toggleEmp(this)">
-      <div class="check-icon">✓</div>
-      <span>${e}</span>
-      ${disabled ? '<span style="font-size:10px;color:var(--muted)">(assigned)</span>' : ''}
+  el.innerHTML=rows.map(a=>{
+    const past=a.dutyDate<t, isMe=a.employees.includes(curUser);
+    return `<div class="tcard${past?' past':''}" style="${isMe?'border-color:rgba(232,197,71,.45);':''}">
+      <div class="tcard-hd">
+        <div>
+          <div class="tcard-name">${a.task}</div>
+          <div class="tcard-date">Duty: ${fmtDate(a.dutyDate)} ${dateBadge(a.dutyDate)}</div>
+          <div class="tcard-date">Assigned: ${fmtDate(a.dateAssigned)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="tbadge${past?' past':''}">${a.task}</span>
+          ${isMe?'<span style="font-size:11px;background:rgba(232,197,71,.15);border:1px solid rgba(232,197,71,.4);color:var(--accent);padding:3px 8px;border-radius:100px;white-space:nowrap;">Your Task ✓</span>':''}
+        </div>
+      </div>
+      <div class="tcard-bd">
+        <div class="asgn-lbl">Assigned Team</div>
+        <div class="asgn-grid">
+          ${a.employees.map(emp=>`<div class="aname${emp===curUser?' me':''}">
+            ${emp===curUser?'<div class="me-dot"></div>':''}${emp}
+          </div>`).join('')}
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
 
-function toggleEmp(el) {
-  if (el.classList.contains('disabled')) return;
-  el.classList.toggle('selected');
+// ─── FILTER PRESETS ────────────────────────────────────────────────────────
+function setPreset(btns,active){ btns.forEach(id=>{ const el=document.getElementById(id); if(el)el.classList.toggle('af',id===active); }); }
+
+function aPreset(p){
+  setPreset(['apAll','apToday','apWeek','apMonth'],'ap'+p[0].toUpperCase()+p.slice(1));
+  if(p==='all'){af.from='';af.to='';}
+  else if(p==='today'){af.from=td();af.to=td();}
+  else if(p==='week'){af.from=weekStart();af.to=weekEnd();}
+  else if(p==='month'){af.from=monthStart();af.to=monthEnd();}
+  document.getElementById('aFrom').value=af.from;
+  document.getElementById('aTo').value=af.to;
+  renderCurTable();
+}
+function aClear(){
+  af.from='';af.to='';af.task='';
+  document.getElementById('aFrom').value='';
+  document.getElementById('aTo').value='';
+  document.getElementById('aTask').value='';
+  setPreset(['apAll','apToday','apWeek','apMonth'],'apAll');
+  renderCurTable();
+}
+function hPreset(n){
+  setPreset(['hp7','hp30','hpAll'],n===7?'hp7':n===30?'hp30':'hpAll');
+  if(n===0){hf.from='';hf.to='';}
+  else{hf.from=daysAgo(n);hf.to=td();}
+  document.getElementById('hFrom').value=hf.from;
+  document.getElementById('hTo').value=hf.to;
+  renderHistTable();
+}
+function hClear(){
+  hf.from='';hf.to='';hf.task='';hf.emp='';
+  ['hFrom','hTo','hTask','hEmp'].forEach(id=>document.getElementById(id).value='');
+  renderHistTable();
+}
+function efPreset(p){
+  setPreset(['efAll','efToday','efWeek'],'ef'+p[0].toUpperCase()+p.slice(1));
+  if(p==='all'){ef.from='';ef.to='';}
+  else if(p==='today'){ef.from=td();ef.to=td();}
+  else if(p==='week'){ef.from=weekStart();ef.to=weekEnd();}
+  document.getElementById('efFrom').value=ef.from;
+  document.getElementById('efTo').value=ef.to;
+  renderEmpView();
+}
+function efClear(){
+  ef.from='';ef.to='';ef.task='';
+  ['efFrom','efTo','efTask'].forEach(id=>document.getElementById(id).value='');
+  setPreset(['efAll','efToday','efWeek'],'efAll');
+  renderEmpView();
+}
+function ehPreset(n){
+  if(n===0){ehf.from='';ehf.to='';}
+  else{ehf.from=daysAgo(n);ehf.to=td();}
+  document.getElementById('ehFrom').value=ehf.from;
+  document.getElementById('ehTo').value=ehf.to;
+  renderEmpView();
+}
+function ehClear(){
+  ehf.from='';ehf.to='';ehf.task='';
+  ['ehFrom','ehTo','ehTask'].forEach(id=>document.getElementById(id).value='');
+  renderEmpView();
 }
 
-// Re-render checkboxes when task or date changes
-document.getElementById('assignTask').addEventListener('change', renderEmpCheckboxes);
-document.getElementById('assignDate').addEventListener('change', renderEmpCheckboxes);
-
-function renderAssignTable() {
-  const tbody = document.getElementById('assignTableBody');
-  if (state.assignments.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No assignments yet.</td></tr>';
-    return;
-  }
-  // Sort by duty date
-  const sorted = [...state.assignments].sort((a,b) => a.dutyDate.localeCompare(b.dutyDate));
-  tbody.innerHTML = sorted.map(a => {
-    const today = new Date().toISOString().split('T')[0];
-    const isFuture = a.dutyDate > today;
-    return `<tr>
-      <td><strong>${a.task}</strong></td>
-      <td>
-        <span class="date-badge">${formatDate(a.dutyDate)}</span>
-        ${isFuture ? '<span class="future-badge">Advance</span>' : ''}
-      </td>
-      <td><span class="date-badge">${formatDate(a.dateAssigned)}</span></td>
-      <td><div class="emp-pills">${a.employees.map(e=>`<span class="emp-pill">${e}</span>`).join('')}</div></td>
-    </tr>`;
-  }).join('');
+// ─── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
 }
 
-function renderEmpView() {
-  const el = document.getElementById('empTaskCards');
-  const greeting = document.getElementById('empGreeting');
-  if (currentUser) greeting.textContent = `Hello, ${currentUser}! 👋`;
-
-  if (state.assignments.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>No assignments yet</h3><p>Check back later for your task assignments.</p></div>`;
-    return;
-  }
-
-  // Group by task name (show all tasks)
-  const taskMap = {};
-  state.assignments.forEach(a => {
-    if (!taskMap[a.task]) taskMap[a.task] = [];
-    taskMap[a.task].push(a);
-  });
-
-  el.innerHTML = Object.entries(taskMap).map(([task, assignments]) => {
-    // Sort assignments by duty date
-    const sorted = [...assignments].sort((a,b) => a.dutyDate.localeCompare(b.dutyDate));
-    const today = new Date().toISOString().split('T')[0];
-
-    return sorted.map(a => {
-      const isFuture = a.dutyDate > today;
-      const isMyTask = a.employees.includes(currentUser);
-      return `<div class="task-card" style="${isMyTask ? 'border-color:rgba(232,197,71,0.4);' : ''}">
-        <div class="task-card-header">
-          <div>
-            <div class="task-card-name">${task}</div>
-            <div class="task-card-date">
-              Duty: ${formatDate(a.dutyDate)} ${isFuture ? '<span class="future-badge">Advance</span>' : ''}
-            </div>
-            <div class="task-card-date" style="margin-top:3px;">Assigned: ${formatDate(a.dateAssigned)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-            <span class="task-type-badge">${task}</span>
-            ${isMyTask ? '<span style="font-size:11px;background:rgba(232,197,71,0.15);border:1px solid rgba(232,197,71,0.4);color:var(--accent);padding:3px 8px;border-radius:100px;">Your Task</span>' : ''}
-          </div>
-        </div>
-        <div class="task-card-body">
-          <div class="assigned-label">Assigned Team</div>
-          <div class="assigned-grid">
-            ${a.employees.map(emp => `
-              <div class="assigned-name ${emp === currentUser ? 'is-me' : ''}">
-                ${emp === currentUser ? '<div class="me-dot"></div>' : ''}
-                ${emp}
-              </div>`).join('')}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }).join('');
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-// ─── INIT ──────────────────────────────────────────────────────────────────
-// Set default date
-document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
+// INIT
+document.getElementById('assignDate').value=td();
 </script>
 </body>
 </html>

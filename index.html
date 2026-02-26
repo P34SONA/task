@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Task Management Portal</title>
+<title>TaskFlow — Team Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -251,6 +251,44 @@
   .toast.err{ border-color:rgba(248,113,113,.4); color:var(--red); }
   @keyframes sli{ from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
 
+  /* ── SCHEDULE TABLE ── */
+  #scheduleView{ display:none; }
+  .sched-nav{ display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+  .sched-nav h2{ font-family:'DM Serif Display',serif; font-size:24px; flex:1; }
+  .week-picker{ display:flex; align-items:center; gap:8px; }
+  .week-picker input[type=date]{ width:160px; padding:8px 12px; font-size:13px; }
+  .sched-outer{ overflow-x:auto; border-radius:16px; border:1px solid var(--border); margin-bottom:32px; }
+  .sched-table{ width:100%; border-collapse:collapse; min-width:900px; }
+  .sched-table th{ background:var(--surface2); padding:10px 14px; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); text-align:center; white-space:nowrap; }
+  .sched-table th.sun{ color:var(--red); }
+  .sched-table th.today-col{ background:rgba(232,197,71,.08); color:var(--accent); }
+  .sched-table th:first-child{ text-align:left; min-width:160px; }
+  .sched-table td{ padding:8px 12px; font-size:13px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); vertical-align:top; min-width:120px; }
+  .sched-table td:first-child{ font-weight:600; font-size:12px; white-space:nowrap; color:var(--text); background:var(--surface2); }
+  .sched-table td.today-col{ background:rgba(232,197,71,.04); }
+  .sched-table tr:last-child td{ border-bottom:none; }
+  .sched-table tr.row-dayoff td:first-child{ color:#f9a8d4; }
+  .sched-table tr.row-leave td:first-child{ color:#c084fc; }
+  .sched-table tr.row-ot td:first-child{ color:var(--orange,#fb923c); }
+  .sched-table tr.row-dayoff td{ background:rgba(249,168,212,.05); }
+  .sched-table tr.row-leave td{ background:rgba(192,132,252,.05); }
+  .sched-table tr.row-ot td{ background:rgba(251,146,60,.05); }
+  .sched-name-pill{ display:inline-block; background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:2px 8px; font-size:11px; margin:2px 2px; white-space:nowrap; cursor:default; }
+  .sched-name-pill.mine{ background:rgba(232,197,71,.15); border-color:rgba(232,197,71,.4); color:var(--accent); }
+  .sched-name-pill.editable{ cursor:pointer; }
+  .sched-name-pill.editable:hover{ border-color:var(--red); color:var(--red); }
+  .sched-add-btn{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--surface2); border:1px dashed var(--border); color:var(--muted); font-size:14px; cursor:pointer; transition:all .15s; vertical-align:middle; margin:2px; }
+  .sched-add-btn:hover{ border-color:var(--accent); color:var(--accent); background:rgba(232,197,71,.1); }
+  .sched-section-title{ font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:24px 0 12px; display:flex; align-items:center; gap:8px; }
+
+  /* assign modal for schedule */
+  .emp-check-grid{ display:flex; flex-wrap:wrap; gap:8px; max-height:240px; overflow-y:auto; padding:4px 0; }
+  .ecc{ display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:7px 12px; cursor:pointer; transition:all .15s; user-select:none; font-size:13px; }
+  .ecc:hover{ border-color:var(--accent); }
+  .ecc.on{ background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .ecc .ck{ width:14px; height:14px; border-radius:3px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; }
+  .ecc.on .ck{ background:var(--accent); border-color:var(--accent); color:#0d0f14; }
+
   @media(max-width:800px){
     .grid-2,.grid-3{ grid-template-columns:1fr }
     .assign-top-row{ grid-template-columns:1fr }
@@ -274,9 +312,9 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">Task Management</div>
+    <div class="config-logo">TaskFlow</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
-<!--
+
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
     </div>
@@ -286,14 +324,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
--->
+
     <div class="form-group" style="margin-top:24px;">
-      <label>Database Project URL</label>
-      <input type="text" id="cfgUrl" placeholder="Ask the Administrator">
+      <label>Supabase Project URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
     </div>
     <div class="form-group">
-      <label>Database Anon Key</label>
-      <input type="text" id="cfgKey" placeholder="Ask the Administrator">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -303,10 +341,10 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">Task Management</div>
+    <div class="login-logo">TaskFlow</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
-      <label>Your First name</label>
+      <label>Your Name</label>
       <input type="text" id="loginName" placeholder="Enter your name…" autocomplete="off">
       <div class="error-msg" id="loginError">Name not found. Check spelling or contact your admin.</div>
     </div>
@@ -322,7 +360,7 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">Tasks Management Overview</div>
+    <div class="topbar-logo">TaskFlow</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
         <div class="sync-dot"></div> Live
@@ -336,8 +374,9 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">👩🏻‍💻 Admin</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
     <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
+    <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
   </div>
 
   <!-- ADMIN -->
@@ -443,7 +482,61 @@
   </div>
 </div>
 
-<!-- CONFIRM MODAL -->
+  <!-- SCHEDULE VIEW -->
+  <div id="scheduleView" class="main" style="display:none;">
+    <div class="sched-nav">
+      <h2>📆 Weekly Schedule</h2>
+      <div class="week-picker">
+        <button class="btn btn-ghost" onclick="shiftWeek(-1)">← Prev</button>
+        <input type="date" id="weekAnchor" onchange="renderSchedule()">
+        <button class="btn btn-ghost" onclick="shiftWeek(1)">Next →</button>
+        <button class="btn btn-ghost af" onclick="goToThisWeek()">This Week</button>
+      </div>
+      <div id="weekLabel" style="font-size:13px;color:var(--muted);"></div>
+    </div>
+
+    <!-- SHIFTS TABLE -->
+    <div class="sched-section-title">🕐 Shift Schedule</div>
+    <div class="sched-outer">
+      <table class="sched-table" id="shiftTable">
+        <thead id="shiftHead"></thead>
+        <tbody id="shiftBody"></tbody>
+      </table>
+    </div>
+
+    <!-- OVERTIME TABLE -->
+    <div class="sched-section-title">⏰ Extended Overtime</div>
+    <div class="sched-outer">
+      <table class="sched-table" id="otTable">
+        <thead id="otHead"></thead>
+        <tbody id="otBody"></tbody>
+      </table>
+    </div>
+
+    <!-- LEAVES TABLE -->
+    <div class="sched-section-title">🌴 Leaves &amp; Day-offs</div>
+    <div class="sched-outer">
+      <table class="sched-table" id="lvTable">
+        <thead id="lvHead"></thead>
+        <tbody id="lvBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /app -->
+
+<!-- SCHEDULE ASSIGN MODAL -->
+<div class="modal-overlay" id="schedModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-close" onclick="closeSchedModal()">✕</div>
+    <div class="modal-title" id="schedModalTitle">Assign Employees</div>
+    <div class="modal-sub"   id="schedModalSub"></div>
+    <div class="emp-check-grid" id="schedEmpGrid"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeSchedModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary"   onclick="saveSchedModal()"  style="flex:1;justify-content:center;">Save</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
     <div class="modal-close" onclick="closeModal()">✕</div>
@@ -479,10 +572,12 @@ function resetConfig(){
 
 // ─── SUPABASE INIT ────────────────────────────────────────────────────────
 let sb = null;
-let S = { admins:[], employees:[], tasks:[], assignments:[] };
+let S = { admins:[], employees:[], tasks:[], assignments:[], shiftTypes:[], scheduleEntries:[], overtimeEntries:[], leaveEntries:[] };
 let curUser=null, isAdmin=false, isGuest=false, appTab='employee', sub='current';
 const hf={from:'',to:'',task:'',emp:''};
 let pendingAction=null;
+// schedule modal context
+let schedCtx = null; // {type:'shift'|'ot'|'leave', date, shiftTypeId, leaveType}
 
 async function initSupabase(url, key){
   showLoading('Connecting to database…');
@@ -508,27 +603,30 @@ async function initSupabase(url, key){
 async function fetchAll(){
   showLoading('Loading data…');
   try {
-    const [adm, emp, tsk, asgn, aemp] = await Promise.all([
+    const [adm, emp, tsk, asgn, aemp, sht, se, ot, lv] = await Promise.all([
       sb.from('admins').select('*').order('name'),
       sb.from('employees').select('*').order('name'),
       sb.from('tasks').select('*').order('name'),
       sb.from('assignments').select('*').order('duty_from', {ascending:false}),
-      sb.from('assignment_employees').select('*')
+      sb.from('assignment_employees').select('*'),
+      sb.from('shift_types').select('*').order('sort_order'),
+      sb.from('schedule_entries').select('*'),
+      sb.from('overtime_entries').select('*'),
+      sb.from('leave_entries').select('*')
     ]);
     S.admins    = (adm.data  || []).map(r=>r.name);
     S.employees = (emp.data  || []).map(r=>r.name);
     S.tasks     = (tsk.data  || []).map(r=>r.name);
-    // Merge assignment_employees into assignments
     const aeMap = {};
     (aemp.data||[]).forEach(r=>{ if(!aeMap[r.assignment_id])aeMap[r.assignment_id]=[]; aeMap[r.assignment_id].push(r.employee_name); });
     S.assignments = (asgn.data||[]).map(a=>({
-      id:           a.id,
-      task:         a.task_name,
-      dutyFrom:     a.duty_from,
-      dutyTo:       a.duty_to,
-      dateAssigned: a.date_assigned,
-      employees:    aeMap[a.id]||[]
+      id:a.id, task:a.task_name, dutyFrom:a.duty_from, dutyTo:a.duty_to,
+      dateAssigned:a.date_assigned, employees:aeMap[a.id]||[]
     }));
+    S.shiftTypes      = sht.data || [];
+    S.scheduleEntries = se.data  || [];
+    S.overtimeEntries = ot.data  || [];
+    S.leaveEntries    = lv.data  || [];
     hideLoading();
     renderAll();
   } catch(e){
@@ -545,6 +643,10 @@ function subscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'tasks'},fetchAll)
     .on('postgres_changes',{event:'*',schema:'public',table:'assignments'},fetchAll)
     .on('postgres_changes',{event:'*',schema:'public',table:'assignment_employees'},fetchAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'shift_types'},fetchAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'schedule_entries'},fetchAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'overtime_entries'},fetchAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'leave_entries'},fetchAll)
     .subscribe();
 }
 
@@ -606,9 +708,12 @@ function startApp(){
   else             { pill.textContent='Employee'; pill.className='role-pill emp'; }
   const ta=document.getElementById('tabAdmin');
   if(isAdmin){ ta.disabled=false; ta.style.opacity='1'; ta.style.cursor='pointer'; switchTab('admin'); }
-  else        { ta.disabled=true;  ta.style.opacity='0.3'; ta.style.cursor='not-allowed'; switchTab('employee'); }
+  else        { ta.disabled=true;  ta.style.opacity='0.3'; ta.style.cursor='not-allowed'; switchTab('schedule'); }
   document.getElementById('dutyFrom').value=td();
   document.getElementById('dutyTo').value=td();
+  // init week anchor to Monday of current week
+  const wa=document.getElementById('weekAnchor');
+  if(wa){ wa.value=weekStart(); }
   document.getElementById('guestBanner').style.display=isGuest?'flex':'none';
   renderAll();
 }
@@ -624,11 +729,15 @@ function logout(){
 function switchTab(t){
   if(t==='admin'&&!isAdmin)return;
   appTab=t;
-  document.getElementById('tabAdmin').classList.toggle('active',t==='admin');
-  document.getElementById('tabEmp').classList.toggle('active',t==='employee');
-  document.getElementById('adminView').style.display=t==='admin'?'block':'none';
-  document.getElementById('empView').style.display=t==='employee'?'block':'none';
-  if(t==='employee')renderEmpView();
+  ['admin','employee','schedule'].forEach(id=>{
+    const btn=document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
+    if(btn) btn.classList.toggle('active', id===t);
+  });
+  document.getElementById('adminView').style.display   = t==='admin'    ?'block':'none';
+  document.getElementById('empView').style.display     = t==='employee' ?'block':'none';
+  document.getElementById('scheduleView').style.display= t==='schedule' ?'block':'none';
+  if(t==='employee') renderEmpView();
+  if(t==='schedule') renderSchedule();
 }
 function switchSub(s){
   sub=s;
@@ -728,7 +837,8 @@ function renderAll(){
   renderAdminList(); renderEmpList(); renderTaskList();
   renderAssignDropdown(); renderEmpCbs(); syncFilterDropdowns();
   renderHistTable();
-  if(appTab==='employee')renderEmpView();
+  if(appTab==='employee') renderEmpView();
+  if(appTab==='schedule') renderSchedule();
 }
 
 function renderAdminList(){
@@ -905,6 +1015,222 @@ function hClear(){
 function wireInput(id,obj,key,fn){ const el=document.getElementById(id); if(el)el.addEventListener('change',function(){obj[key]=this.value;fn();}); }
 wireInput('hFrom',hf,'from',renderHistTable); wireInput('hTo',hf,'to',renderHistTable);
 wireInput('hTask',hf,'task',renderHistTable); wireInput('hEmp',hf,'emp',renderHistTable);
+
+// ─── SCHEDULE HELPERS ────────────────────────────────────────────────────
+function getWeekDates(){
+  const anchor = document.getElementById('weekAnchor');
+  let base = anchor && anchor.value ? new Date(anchor.value+'T00:00:00') : new Date();
+  // snap to Monday
+  const day = base.getDay(); // 0=Sun
+  const diff = day===0 ? -6 : 1-day;
+  base.setDate(base.getDate()+diff);
+  const dates=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(base); d.setDate(base.getDate()+i);
+    dates.push(d.toISOString().slice(0,10));
+  }
+  return dates;
+}
+function shiftWeek(n){
+  const el=document.getElementById('weekAnchor');
+  const cur=el.value?new Date(el.value+'T00:00:00'):new Date();
+  cur.setDate(cur.getDate()+n*7);
+  el.value=cur.toISOString().slice(0,10);
+  renderSchedule();
+}
+function goToThisWeek(){ document.getElementById('weekAnchor').value=weekStart(); renderSchedule(); }
+function fmtColDate(s){
+  const d=new Date(s+'T00:00:00');
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `<div style="font-weight:700;font-size:12px;">${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}</div><div style="font-size:11px;margin-top:2px;">${days[d.getDay()===0?6:d.getDay()-1]}</div>`;
+}
+function isSunday(s){ return new Date(s+'T00:00:00').getDay()===0; }
+function isToday(s){ return s===td(); }
+
+function buildDateHeader(dates){
+  const t=td();
+  return `<tr>
+    <th style="text-align:left;">Shifting</th>
+    ${dates.map(d=>`<th class="${isSunday(d)?'sun':''} ${isToday(d)?'today-col':''}">${fmtColDate(d)}</th>`).join('')}
+  </tr>`;
+}
+
+// ─── RENDER SCHEDULE ─────────────────────────────────────────────────────
+function renderSchedule(){
+  const dates = getWeekDates();
+  const label = document.getElementById('weekLabel');
+  if(label) label.textContent = fmtDate(dates[0]) + ' – ' + fmtDate(dates[6]);
+
+  renderShiftTable(dates);
+  renderOtTable(dates);
+  renderLeaveTable(dates);
+}
+
+function getNamesForShift(date, shiftTypeId){
+  return S.scheduleEntries
+    .filter(e=>e.schedule_date===date && e.shift_type_id===shiftTypeId)
+    .map(e=>e.employee_name);
+}
+function getNamesForOt(date){
+  return S.overtimeEntries.filter(e=>e.schedule_date===date).map(e=>e.employee_name);
+}
+function getNamesForLeave(date, leaveType){
+  return S.leaveEntries.filter(e=>e.schedule_date===date && e.leave_type===leaveType).map(e=>e.employee_name);
+}
+
+function renderNamePills(names, date, ctx){
+  const canEdit = isAdmin;
+  return names.map(n=>`<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''} ${canEdit?'editable':''}"
+    title="${canEdit?'Click to remove':''}"
+    onclick="${canEdit?`removeSchedName(this,'${n}',${JSON.stringify(ctx)})`:''}">
+    ${n}${canEdit?'<span style="margin-left:3px;opacity:.5;">×</span>':''}
+  </span>`).join('');
+}
+
+function addBtn(ctx){
+  if(!isAdmin) return '';
+  return `<span class="sched-add-btn" title="Add employee" onclick="openSchedModal(${JSON.stringify(ctx)})">+</span>`;
+}
+
+function renderShiftTable(dates){
+  const head = document.getElementById('shiftHead');
+  const body = document.getElementById('shiftBody');
+  head.innerHTML = buildDateHeader(dates);
+  if(!S.shiftTypes.length){
+    body.innerHTML=`<tr><td colspan="${dates.length+1}" style="text-align:center;color:var(--muted);padding:30px;">No shift types configured. Add them in the SQL seed.</td></tr>`;
+    return;
+  }
+  body.innerHTML = S.shiftTypes.map(st=>{
+    const cells = dates.map(d=>{
+      const names = getNamesForShift(d, st.id);
+      const ctx = {type:'shift', date:d, shiftTypeId:st.id, leaveType:null};
+      return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,d,ctx)}${addBtn(ctx)}</td>`;
+    }).join('');
+    return `<tr><td>${st.name}</td>${cells}</tr>`;
+  }).join('');
+}
+
+function renderOtTable(dates){
+  const head = document.getElementById('otHead');
+  const body = document.getElementById('otBody');
+  head.innerHTML = buildDateHeader(dates);
+  const cells = dates.map(d=>{
+    const names = getNamesForOt(d);
+    const ctx = {type:'ot', date:d, shiftTypeId:null, leaveType:null};
+    return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,d,ctx)}${addBtn(ctx)}</td>`;
+  }).join('');
+  body.innerHTML = `<tr class="row-ot"><td>Extended OT</td>${cells}</tr>`;
+}
+
+function renderLeaveTable(dates){
+  const head = document.getElementById('lvHead');
+  const body = document.getElementById('lvBody');
+  head.innerHTML = buildDateHeader(dates);
+  const leaveTypes = ['Dayoff','Pre Approved Leave'];
+  body.innerHTML = leaveTypes.map(lt=>{
+    const cells = dates.map(d=>{
+      const names = getNamesForLeave(d, lt);
+      const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:lt};
+      return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,d,ctx)}${addBtn(ctx)}</td>`;
+    }).join('');
+    const rowClass = lt==='Dayoff'?'row-dayoff':'row-leave';
+    return `<tr class="${rowClass}"><td>${lt}</td>${cells}</tr>`;
+  }).join('');
+}
+
+// ─── SCHEDULE MODAL ───────────────────────────────────────────────────────
+function openSchedModal(ctx){
+  schedCtx = ctx;
+  const title = ctx.type==='shift'
+    ? S.shiftTypes.find(s=>s.id===ctx.shiftTypeId)?.name || 'Shift'
+    : ctx.type==='ot' ? 'Extended Overtime' : ctx.leaveType;
+  document.getElementById('schedModalTitle').textContent = 'Assign: ' + title;
+  document.getElementById('schedModalSub').textContent   = fmtDate(ctx.date);
+
+  // figure out who's already assigned
+  let assigned = [];
+  if(ctx.type==='shift') assigned = getNamesForShift(ctx.date, ctx.shiftTypeId);
+  else if(ctx.type==='ot') assigned = getNamesForOt(ctx.date);
+  else assigned = getNamesForLeave(ctx.date, ctx.leaveType);
+
+  const grid = document.getElementById('schedEmpGrid');
+  grid.innerHTML = S.employees.map(e=>{
+    const on = assigned.includes(e);
+    return `<div class="ecc${on?' on':''}" onclick="toggleEcc(this)">
+      <div class="ck">${on?'✓':''}</div>${e}
+    </div>`;
+  }).join('');
+
+  document.getElementById('schedModal').classList.add('open');
+}
+function closeSchedModal(){ document.getElementById('schedModal').classList.remove('open'); schedCtx=null; }
+document.getElementById('schedModal').addEventListener('click',function(e){ if(e.target===this)closeSchedModal(); });
+
+function toggleEcc(el){
+  el.classList.toggle('on');
+  el.querySelector('.ck').textContent = el.classList.contains('on') ? '✓' : '';
+}
+
+async function saveSchedModal(){
+  if(!schedCtx) return;
+  const ctx = schedCtx;
+  const selected = [...document.querySelectorAll('#schedEmpGrid .ecc.on')].map(el=>el.textContent.replace('✓','').trim());
+
+  // figure out current state
+  let current = [];
+  if(ctx.type==='shift')      current = getNamesForShift(ctx.date, ctx.shiftTypeId);
+  else if(ctx.type==='ot')    current = getNamesForOt(ctx.date);
+  else                         current = getNamesForLeave(ctx.date, ctx.leaveType);
+
+  const toAdd    = selected.filter(e=>!current.includes(e));
+  const toRemove = current.filter(e=>!selected.includes(e));
+
+  try {
+    if(ctx.type==='shift'){
+      if(toAdd.length){
+        await sb.from('schedule_entries').insert(toAdd.map(e=>({schedule_date:ctx.date,shift_type_id:ctx.shiftTypeId,employee_name:e})));
+      }
+      for(const e of toRemove){
+        await sb.from('schedule_entries').delete().eq('schedule_date',ctx.date).eq('shift_type_id',ctx.shiftTypeId).eq('employee_name',e);
+      }
+    } else if(ctx.type==='ot'){
+      if(toAdd.length){
+        await sb.from('overtime_entries').insert(toAdd.map(e=>({schedule_date:ctx.date,employee_name:e})));
+      }
+      for(const e of toRemove){
+        await sb.from('overtime_entries').delete().eq('schedule_date',ctx.date).eq('employee_name',e);
+      }
+    } else {
+      if(toAdd.length){
+        await sb.from('leave_entries').insert(toAdd.map(e=>({schedule_date:ctx.date,employee_name:e,leave_type:ctx.leaveType})));
+      }
+      for(const e of toRemove){
+        await sb.from('leave_entries').delete().eq('schedule_date',ctx.date).eq('employee_name',e).eq('leave_type',ctx.leaveType);
+      }
+    }
+    showToast('✓ Schedule updated');
+  } catch(err){
+    showToast('Error: '+err.message, true);
+  }
+  closeSchedModal();
+}
+
+async function removeSchedName(el, name, ctx){
+  if(!isAdmin) return;
+  try {
+    if(ctx.type==='shift'){
+      await sb.from('schedule_entries').delete().eq('schedule_date',ctx.date).eq('shift_type_id',ctx.shiftTypeId).eq('employee_name',name);
+    } else if(ctx.type==='ot'){
+      await sb.from('overtime_entries').delete().eq('schedule_date',ctx.date).eq('employee_name',name);
+    } else {
+      await sb.from('leave_entries').delete().eq('schedule_date',ctx.date).eq('employee_name',name).eq('leave_type',ctx.leaveType);
+    }
+    showToast('Removed: '+name);
+  } catch(err){
+    showToast('Error: '+err.message,true);
+  }
+}
 
 // ─── TOAST ────────────────────────────────────────────────────────────────
 function showToast(msg,err=false){

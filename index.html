@@ -272,24 +272,20 @@
   .month-picker input[type=month]{ background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); padding:8px 14px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border-color .2s; }
   .month-picker input[type=month]:focus{ border-color:var(--accent); }
 
-  /* copy-paste row controls */
-  .td-label-wrap{ display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; }
-  .td-label-name{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .row-cp-btns{ display:flex; gap:3px; flex-shrink:0; }
-  .cp-btn{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:20px; height:20px; border-radius:5px; font-size:11px;
-    cursor:pointer; transition:all .15s; border:1px solid var(--border);
-    background:var(--bg); color:var(--muted); line-height:1;
-  }
-  .cp-btn:hover{ border-color:var(--accent); color:var(--accent); background:rgba(232,197,71,.1); }
-  .cp-btn.paste-ready{ border-color:rgba(79,209,197,.5); color:var(--accent2); background:rgba(79,209,197,.08); animation:cpPulse 1.5s ease infinite; }
-  @keyframes cpPulse{ 0%,100%{opacity:1} 50%{opacity:.6} }
-  .copy-flash{ animation:flashGreen .5s ease; }
-  @keyframes flashGreen{ 0%{background:rgba(74,222,128,.25)} 100%{background:transparent} }
+  /* week block wrapper */
+  .week-block{ margin-bottom:28px; }
   .week-block-label{ font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   .week-block-label span{ background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:2px 8px; }
   .sched-outer{ overflow-x:auto; border-radius:14px; border:1px solid var(--border); }
+
+  /* bulk modal extras */
+  .bulk-week-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .bwt{ padding:5px 13px; border-radius:100px; font-size:12px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--muted); transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .bwt:hover{ color:var(--text); border-color:var(--muted); }
+  .bwt.active{ background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); font-weight:700; }
+  .bulk-mode-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .bulk-mode-tab{ flex:1; padding:8px; text-align:center; border-radius:var(--radius); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--muted); transition:all .15s; }
+  .bulk-mode-tab.active{ background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); font-weight:700; }
 
   /* schedule table */
   .sched-table{ border-collapse:collapse; width:100%; }
@@ -410,9 +406,6 @@
   .ecc.on .ck{ background:var(--accent); border-color:var(--accent); color:#0d0f14; }
 
   /* bulk assign modal extras */
-  .bulk-range-row{ display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end; margin-bottom:14px; }
-  .bulk-range-row .dr-sep{ text-align:center; color:var(--muted); font-size:13px; padding-bottom:14px; }
-
   @media(max-width:800px){
     .grid-2,.grid-3{ grid-template-columns:1fr }
     .assign-top-row{ grid-template-columns:1fr }
@@ -641,25 +634,34 @@
 
 <!-- BULK ASSIGN MODAL -->
 <div class="modal-overlay" id="bulkModal">
-  <div class="modal" style="max-width:560px;">
+  <div class="modal" style="max-width:580px;">
     <div class="modal-close" onclick="closeBulkModal()">✕</div>
-    <div class="modal-title">⚡ Bulk Assign Shift</div>
-    <div class="modal-sub">Assign employees to a shift for a date range in one go.</div>
+    <div class="modal-title">⚡ Bulk Assign</div>
+    <div class="modal-sub" id="bulkModalSub">Assign employees to a shift or day-off for a specific week.</div>
 
-    <div style="margin-bottom:14px;">
+    <!-- Mode toggle: Shift or Day Off -->
+    <div class="bulk-mode-tabs" style="margin-bottom:16px;">
+      <div class="bulk-mode-tab active" id="bulkModeShift" onclick="setBulkMode('shift')">🕐 Shift</div>
+      <div class="bulk-mode-tab" id="bulkModeDayoff" onclick="setBulkMode('dayoff')">🌙 Day Off</div>
+    </div>
+
+    <!-- Shift selector (hidden in dayoff mode) -->
+    <div id="bulkShiftRow" style="margin-bottom:14px;">
       <label style="margin-bottom:6px;">Shift Type</label>
-      <select id="bulkShiftSel" style="margin-top:6px;">
+      <select id="bulkShiftSel" style="margin-top:6px;" onchange="refreshBulkEmployees()">
         <option value="">— Choose shift —</option>
       </select>
     </div>
-    <div class="bulk-range-row">
-      <div class="fg"><label>From Date</label><input type="date" id="bulkFrom" style="margin-top:6px;"></div>
-      <div class="dr-sep">→</div>
-      <div class="fg"><label>To Date</label><input type="date" id="bulkTo" style="margin-top:6px;"></div>
-    </div>
+
+    <!-- Week selector pills -->
+    <label style="margin-bottom:8px;display:block;">Week</label>
+    <div class="bulk-week-tabs" id="bulkWeekTabs"></div>
+
+    <!-- Employee grid -->
     <label style="margin-bottom:8px;display:block;">Select Employees</label>
     <div class="emp-check-grid" id="bulkEmpGrid"></div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
+
+    <div style="display:flex;gap:10px;margin-top:18px;">
       <button class="btn btn-secondary" onclick="closeBulkModal()" style="flex:1;justify-content:center;">Cancel</button>
       <button class="btn btn-primary"   onclick="saveBulkAssign()" style="flex:1;justify-content:center;">Assign</button>
     </div>
@@ -693,6 +695,11 @@
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────
+const SESSION_KEY = 'taskflow_session';
+function saveSession(){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify({curUser, isAdmin, isGuest})); }catch(e){} }
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY))||null; }catch(e){return null;} }
+function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
+
 const CFG_KEY = 'taskflow_supabase_config';
 
 function loadConfig(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY))||null; }catch(e){return null;} }
@@ -728,11 +735,30 @@ async function initSupabase(url, key){
     // test connection
     const { error } = await sb.from('admins').select('id').limit(1);
     if(error) throw error;
-    hideLoading();
     document.getElementById('configScreen').style.display='none';
-    document.getElementById('loginScreen').style.display='flex';
     await fetchAll();
     subscribeRealtime();
+
+    // Restore session if available — skip login screen
+    const sess = loadSession();
+    if(sess && sess.curUser){
+      // Validate the saved user still exists in the DB
+      const stillValid =
+        sess.isGuest ||
+        (sess.isAdmin  && S.admins.find(a=>a.toLowerCase()===sess.curUser.toLowerCase())) ||
+        (!sess.isAdmin && S.employees.find(e=>e.toLowerCase()===sess.curUser.toLowerCase()));
+      if(stillValid){
+        curUser  = sess.curUser;
+        isAdmin  = sess.isAdmin;
+        isGuest  = sess.isGuest;
+        hideLoading();
+        startApp();
+        return;
+      }
+    }
+    // No valid session — show login
+    hideLoading();
+    document.getElementById('loginScreen').style.display='flex';
   } catch(e){
     hideLoading();
     document.getElementById('configScreen').style.display='flex';
@@ -829,12 +855,12 @@ async function doLogin(){
   const n=document.getElementById('loginName').value.trim(); if(!n)return;
   document.getElementById('loginError').style.display='none';
   const foundAdmin=S.admins.find(a=>a.toLowerCase()===n.toLowerCase());
-  if(foundAdmin){ curUser=foundAdmin; isAdmin=true; isGuest=false; startApp(); return; }
+  if(foundAdmin){ curUser=foundAdmin; isAdmin=true; isGuest=false; saveSession(); startApp(); return; }
   const foundEmp=S.employees.find(e=>e.toLowerCase()===n.toLowerCase());
-  if(foundEmp){ curUser=foundEmp; isAdmin=false; isGuest=false; startApp(); return; }
+  if(foundEmp){ curUser=foundEmp; isAdmin=false; isGuest=false; saveSession(); startApp(); return; }
   document.getElementById('loginError').style.display='block';
 }
-function guestLogin(){ curUser='Guest'; isAdmin=false; isGuest=true; startApp(); }
+function guestLogin(){ curUser='Guest'; isAdmin=false; isGuest=true; saveSession(); startApp(); }
 document.getElementById('loginName').addEventListener('keydown',e=>{ if(e.key==='Enter')doLogin(); });
 
 function startApp(){
@@ -860,6 +886,7 @@ function startApp(){
   renderAll();
 }
 function logout(){
+  clearSession();
   curUser=null; isAdmin=false; isGuest=false;
   document.getElementById('app').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
@@ -1276,63 +1303,6 @@ function handleAddBtn(el){
   openSchedModal(entry.ctx);
 }
 
-// ─── SHIFT COPY/PASTE ─────────────────────────────────────────────────────
-// clipboard: { shiftTypeId, employees: [{date_offset, name}] }
-// We store by day-of-week offset so paste maps Mon→Mon, Tue→Tue etc.
-let _shiftClipboard = null; // { shiftTypeId, shiftName, byDow: {0:[names],1:[names],...} }
-
-function copyShiftRow(shiftTypeId, weekDates){
-  const shiftName = S.shiftTypes.find(s=>s.id===shiftTypeId)?.name || 'Shift';
-  // Capture assignments keyed by day-of-week (0=Sun…6=Sat)
-  const byDow = {};
-  weekDates.forEach(d=>{
-    const dow = new Date(d+'T00:00:00').getDay();
-    byDow[dow] = getNamesForShift(d, shiftTypeId);
-  });
-  _shiftClipboard = {shiftTypeId, shiftName, byDow};
-  // Visual feedback — highlight all paste buttons for this shift
-  document.querySelectorAll(`[id^="pasteBtn_"]`).forEach(btn=>{
-    if(btn.id.endsWith('_'+shiftTypeId)) btn.classList.add('paste-ready');
-    else btn.classList.remove('paste-ready');
-  });
-  showToast(`⎘ Copied "${shiftName}" — click ⏩ on any week to paste`);
-}
-
-async function pasteShiftRow(shiftTypeId, weekDates, btnEl){
-  if(!_shiftClipboard){ showToast('Nothing copied yet'); return; }
-  if(!isAdmin) return;
-
-  // Warn if pasting onto a different shift type
-  const targetName = S.shiftTypes.find(s=>s.id===shiftTypeId)?.name || 'Shift';
-  if(_shiftClipboard.shiftTypeId !== shiftTypeId){
-    if(!confirm(`Paste "${_shiftClipboard.shiftName}" assignments into "${targetName}"?\n\nThis will merge — existing entries won't be removed.`)) return;
-  }
-
-  // Map by day-of-week to the target week dates
-  const toInsert = [];
-  weekDates.forEach(d=>{
-    const dow = new Date(d+'T00:00:00').getDay();
-    const names = _shiftClipboard.byDow[dow] || [];
-    const existing = getNamesForShift(d, shiftTypeId);
-    names.forEach(emp=>{
-      if(!existing.includes(emp)) toInsert.push({schedule_date:d, shift_type_id:shiftTypeId, employee_name:emp});
-    });
-  });
-
-  if(!toInsert.length){ showToast('All entries already exist in target week'); return; }
-
-  showToast(`Pasting ${toInsert.length} assignment(s)…`);
-  const {error} = await sb.from('schedule_entries').insert(toInsert);
-  if(error){ showToast('Error: '+error.message, true); return; }
-
-  // Flash the button row
-  if(btnEl){ const row=btnEl.closest('tr'); if(row){ row.classList.add('copy-flash'); setTimeout(()=>row.classList.remove('copy-flash'),600); } }
-  showToast(`✓ Pasted ${toInsert.length} assignment(s) into ${targetName}`);
-  // Clear paste-ready state
-  document.querySelectorAll('.cp-btn.paste-ready').forEach(b=>b.classList.remove('paste-ready'));
-  _shiftClipboard = null;
-}
-
 // ─── RENDER SCHEDULE (WEEK BLOCKS) ────────────────────────────────────────
 function renderSchedule(){
   const ym = getSelectedYearMonth();
@@ -1369,20 +1339,8 @@ function renderSchedule(){
         return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}${addBtn(ctx)}</td>`;
       }).join('');
 
-      // Copy/paste buttons on label (admin only)
-      const cpBtns = isAdmin ? `
-        <div class="row-cp-btns">
-          <span class="cp-btn" title="Copy this shift row (${st.name})" onclick="copyShiftRow(${st.id},${JSON.stringify(weekDates)})">⎘</span>
-          <span class="cp-btn" id="pasteBtn_${wi}_${st.id}" title="Paste copied assignments here" onclick="pasteShiftRow(${st.id},${JSON.stringify(weekDates)}, this)">⏩</span>
-        </div>` : '';
-
       rows.push(`<tr data-shiftid="${st.id}">
-        <td class="td-label">
-          <div class="td-label-wrap">
-            <span class="td-label-name">${st.name}</span>
-            ${cpBtns}
-          </div>
-        </td>${cells}
+        <td class="td-label">${st.name}</td>${cells}
       </tr>`);
 
       // Dayoff row after PayPro & Batch Upload
@@ -1392,17 +1350,17 @@ function renderSchedule(){
           const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Dayoff'};
           return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}${addBtn(ctx)}</td>`;
         }).join('');
-        rows.push(`<tr class="row-dayoff"><td class="td-label"><div class="td-label-wrap"><span class="td-label-name">Dayoff</span></div></td>${dayCells}</tr>`);
+        rows.push(`<tr class="row-dayoff"><td class="td-label">Dayoff</td>${dayCells}</tr>`);
       }
     }
 
-    // Pre Approved Leave row at bottom — NO + button (managed from Leaves tab)
+    // Pre Approved Leave row — NO + button (managed from Leaves tab)
     const lvCells = weekDates.map(d=>{
       const names = getNamesForLeave(d,'Pre Approved Leave');
       const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
       return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}</td>`;
     }).join('');
-    rows.push(`<tr class="row-leave"><td class="td-label"><div class="td-label-wrap"><span class="td-label-name">Pre Approved Leave</span></div></td>${lvCells}</tr>`);
+    rows.push(`<tr class="row-leave"><td class="td-label">Pre Approved Leave</td>${lvCells}</tr>`);
 
     return `<div class="week-block">
       <div class="week-block-label"><span>${weekLabel}</span></div>
@@ -1569,72 +1527,163 @@ async function addLeaveRange(){
 }
 
 // ─── BULK ASSIGN MODAL ────────────────────────────────────────────────────
+let _bulkMode = 'shift';   // 'shift' | 'dayoff'
+let _bulkWeeks = [];       // array of weekDates arrays for current month
+let _bulkWeekIdx = 0;      // selected week index
+
+function setBulkMode(mode){
+  _bulkMode = mode;
+  document.getElementById('bulkModeShift').classList.toggle('active', mode==='shift');
+  document.getElementById('bulkModeDayoff').classList.toggle('active', mode==='dayoff');
+  document.getElementById('bulkShiftRow').style.display = mode==='shift' ? 'block' : 'none';
+  document.getElementById('bulkModalSub').textContent = mode==='shift'
+    ? 'Assign employees to a shift for a specific week.'
+    : 'Mark employees as Day Off for a specific week.';
+  refreshBulkEmployees();
+}
+
+function selectBulkWeek(idx){
+  _bulkWeekIdx = idx;
+  document.querySelectorAll('.bwt').forEach((el,i)=>el.classList.toggle('active', i===idx));
+  refreshBulkEmployees();
+}
+
+function refreshBulkEmployees(){
+  const grid = document.getElementById('bulkEmpGrid');
+  if(!grid) return;
+  const weekDates = _bulkWeeks[_bulkWeekIdx] || [];
+
+  if(_bulkMode === 'shift'){
+    const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
+
+    grid.innerHTML = S.employees.map(emp=>{
+      // Disabled if assigned to any OTHER shift any day this week
+      let takenShiftName = null;
+      for(const st of S.shiftTypes){
+        if(st.id === shiftId) continue;
+        if(weekDates.some(d => getNamesForShift(d, st.id).includes(emp))){
+          takenShiftName = st.name; break;
+        }
+      }
+      // Pre-check if already in THIS shift for any day this week
+      const alreadyThisShift = !isNaN(shiftId) && weekDates.some(d => getNamesForShift(d, shiftId).includes(emp));
+      const disabled = !!takenShiftName;
+      const badge = disabled
+        ? `<span class="shift-label-badge" title="Already in: ${takenShiftName}">in ${takenShiftName.length>12?takenShiftName.slice(0,10)+'…':takenShiftName}</span>`
+        : '';
+      return `<div class="ecc${alreadyThisShift&&!disabled?' on':''}${disabled?' disabled-shift':''}"
+        data-emp="${emp.replace(/"/g,'&quot;')}"
+        onclick="${disabled?'':'toggleEcc(this)'}">
+        <div class="ck">${alreadyThisShift&&!disabled?'✓':''}</div>${emp}${badge}
+      </div>`;
+    }).join('');
+
+  } else {
+    // Dayoff mode — disable employees already in any shift this week
+    grid.innerHTML = S.employees.map(emp=>{
+      let takenShiftName = null;
+      for(const st of S.shiftTypes){
+        if(weekDates.some(d => getNamesForShift(d, st.id).includes(emp))){
+          takenShiftName = st.name; break;
+        }
+      }
+      const alreadyDayoff = weekDates.some(d => getNamesForLeave(d,'Dayoff').includes(emp));
+      const disabled = !!takenShiftName;
+      const badge = disabled
+        ? `<span class="shift-label-badge" title="Already in: ${takenShiftName}">in ${takenShiftName.length>12?takenShiftName.slice(0,10)+'…':takenShiftName}</span>`
+        : '';
+      const on = alreadyDayoff && !disabled;
+      return `<div class="ecc${on?' on':''}${disabled?' disabled-shift':''}"
+        data-emp="${emp.replace(/"/g,'&quot;')}"
+        onclick="${disabled?'':'toggleEcc(this)'}">
+        <div class="ck">${on?'✓':''}</div>${emp}${badge}
+      </div>`;
+    }).join('');
+  }
+}
+
 function openBulkModal(){
   if(!isAdmin) return;
   const ym = getSelectedYearMonth();
-  // populate shift dropdown
+  const [y,m] = ym.split('-').map(Number);
+
+  // Build weeks for the current month
+  _bulkWeeks = splitIntoWeeks(getMonthDates(ym));
+  _bulkWeekIdx = 0;
+
+  // Populate week selector pills
+  const weekTabsEl = document.getElementById('bulkWeekTabs');
+  weekTabsEl.innerHTML = _bulkWeeks.map((wk, i)=>{
+    const ws = new Date(wk[0]+'T00:00:00');
+    const we = new Date(wk[wk.length-1]+'T00:00:00');
+    const fmt = d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="bwt${i===0?' active':''}" onclick="selectBulkWeek(${i})">Week ${i+1}<br><span style="font-size:10px;opacity:.7;">${fmt(ws)}–${fmt(we)}</span></div>`;
+  }).join('');
+
+  // Populate shift dropdown
   const sel = document.getElementById('bulkShiftSel');
   sel.innerHTML = '<option value="">— Choose shift —</option>' +
     S.shiftTypes.map(st=>`<option value="${st.id}">${st.name}</option>`).join('');
-  // default dates to current month
-  document.getElementById('bulkFrom').value = ym+'-01';
-  const lastDay = new Date(...ym.split('-').map(Number), 0).getDate();
-  document.getElementById('bulkTo').value = `${ym}-${String(lastDay).padStart(2,'0')}`;
-  // populate employees
-  document.getElementById('bulkEmpGrid').innerHTML = S.employees.map(e=>`
-    <div class="ecc" onclick="toggleEcc(this)">
-      <div class="ck"></div>${e}
-    </div>`).join('');
+
+  // Reset mode to shift
+  _bulkMode = 'shift';
+  document.getElementById('bulkModeShift').classList.add('active');
+  document.getElementById('bulkModeDayoff').classList.remove('active');
+  document.getElementById('bulkShiftRow').style.display = 'block';
+  document.getElementById('bulkModalSub').textContent = 'Assign employees to a shift for a specific week.';
+
+  refreshBulkEmployees();
   document.getElementById('bulkModal').classList.add('open');
 }
+
 function closeBulkModal(){ document.getElementById('bulkModal').classList.remove('open'); }
 document.getElementById('bulkModal').addEventListener('click',function(e){ if(e.target===this)closeBulkModal(); });
 
 async function saveBulkAssign(){
   if(!isAdmin) return;
-  const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
-  const from    = document.getElementById('bulkFrom').value;
-  const to      = document.getElementById('bulkTo').value;
-  const selEmps = [...document.querySelectorAll('#bulkEmpGrid .ecc.on')].map(el=>el.textContent.replace('✓','').trim());
+  const weekDates = _bulkWeeks[_bulkWeekIdx] || [];
+  if(!weekDates.length){ showToast('No week selected'); return; }
 
-  if(!shiftId){ showToast('Choose a shift type'); return; }
-  if(!from||!to){ showToast('Set date range'); return; }
-  if(to<from){ showToast('End must be on or after start'); return; }
+  const selEmps = [...document.querySelectorAll('#bulkEmpGrid .ecc.on')].map(el=>el.dataset.emp).filter(Boolean);
   if(!selEmps.length){ showToast('Select at least one employee'); return; }
 
-  // Build all date strings safely (no UTC shift)
-  function safeDateRange(fromStr, toStr){
-    const result = [];
-    let [y,m,d] = fromStr.split('-').map(Number);
-    while(true){
-      const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      result.push(ds);
-      if(ds===toStr) break;
-      d++; const max=new Date(y,m,0).getDate();
-      if(d>max){d=1;m++;} if(m>12){m=1;y++;}
-      if(result.length>400) break;
-    }
-    return result;
-  }
-  const dates = safeDateRange(from, to);
+  if(_bulkMode === 'shift'){
+    const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
+    if(!shiftId){ showToast('Choose a shift type'); return; }
 
-  // Filter out already-existing entries
-  const rows = [];
-  for(const d of dates){
-    const existing = getNamesForShift(d, shiftId);
-    for(const emp of selEmps){
-      if(!existing.includes(emp)) rows.push({schedule_date:d, shift_type_id:shiftId, employee_name:emp});
+    const rows = [];
+    for(const d of weekDates){
+      const existing = getNamesForShift(d, shiftId);
+      for(const emp of selEmps){
+        if(!existing.includes(emp)) rows.push({schedule_date:d, shift_type_id:shiftId, employee_name:emp});
+      }
     }
-  }
-  if(!rows.length){ showToast('All entries already exist'); return; }
+    if(!rows.length){ showToast('All entries already exist'); return; }
+    showToast('Saving…');
+    for(let i=0;i<rows.length;i+=500){
+      const {error} = await sb.from('schedule_entries').insert(rows.slice(i,i+500));
+      if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
+    }
+    const shiftName = S.shiftTypes.find(s=>s.id===shiftId)?.name||'Shift';
+    showToast(`✓ Assigned ${rows.length} slot(s) to ${shiftName}`);
 
-  showToast('Saving…');
-  // Insert in batches of 500 to avoid payload limits
-  for(let i=0;i<rows.length;i+=500){
-    const {error} = await sb.from('schedule_entries').insert(rows.slice(i,i+500));
-    if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
+  } else {
+    // Dayoff mode
+    const rows = [];
+    for(const d of weekDates){
+      const existing = getNamesForLeave(d,'Dayoff');
+      for(const emp of selEmps){
+        if(!existing.includes(emp)) rows.push({schedule_date:d, employee_name:emp, leave_type:'Dayoff'});
+      }
+    }
+    if(!rows.length){ showToast('All entries already exist'); return; }
+    showToast('Saving…');
+    for(let i=0;i<rows.length;i+=500){
+      const {error} = await sb.from('leave_entries').insert(rows.slice(i,i+500));
+      if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
+    }
+    showToast(`✓ Marked ${rows.length} day-off slot(s)`);
   }
-  showToast(`✓ Bulk assigned ${rows.length} slot(s)`);
   closeBulkModal();
 }
 

@@ -132,15 +132,25 @@
   @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.4} }
   .tabs{ display:flex; background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; overflow-x:auto; }
   .tab{
-    padding:14px 20px; font-size:14px; font-weight:500; color:var(--muted);
-    cursor:pointer; border-bottom:2px solid transparent; transition:all .2s;
+    padding:14px 22px; font-size:14px; font-weight:600; color:var(--muted);
+    cursor:pointer; border-bottom:3px solid transparent; transition:all .2s;
     background:none; border-top:none; border-left:none; border-right:none;
-    font-family:'DM Sans',sans-serif; white-space:nowrap;
+    font-family:'DM Sans',sans-serif; white-space:nowrap; position:relative;
   }
-  .tab:hover{ color:var(--text); }
-  .tab.active{ color:var(--accent); border-bottom-color:var(--accent); }
+  .tab:hover{ color:var(--text); border-bottom-color:rgba(232,197,71,.3); }
+  .tab.active{
+    color:var(--accent); border-bottom-color:var(--accent);
+    text-shadow:0 0 20px rgba(232,197,71,.4);
+  }
+  .tab.active::after{
+    content:''; position:absolute; bottom:-1px; left:50%; transform:translateX(-50%);
+    width:60%; height:3px; background:var(--accent);
+    border-radius:3px 3px 0 0; box-shadow:0 0 12px rgba(232,197,71,.6);
+  }
   .tab:disabled{ opacity:.3; cursor:not-allowed; }
-  .main{ padding:32px; max-width:1200px; margin:0 auto; }
+  /* Schedule & leave views use full viewport width */
+  .main{ padding:28px 32px; max-width:1200px; margin:0 auto; }
+  .main.full-width{ max-width:none; padding:24px 28px; }
 
   /* ── LAYOUT ── */
   .section-title{ font-family:'DM Serif Display',serif; font-size:22px; margin-bottom:4px; color:var(--text); }
@@ -157,7 +167,7 @@
   .input-row input{ flex:1; }
   .sep{ border:none; border-top:1px solid var(--border); margin:28px 0; }
 
-  /* account rows */
+  /* account rows — admins keep list, employees become tags */
   .acct-list{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
   .acct-row{ display:flex; align-items:center; justify-content:space-between; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; gap:12px; }
   .acct-info{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
@@ -166,6 +176,9 @@
   .acct-avatar.e{ background:rgba(79,209,197,.12); color:var(--accent2); border:1px solid rgba(79,209,197,.3); }
   .acct-name{ font-size:13px; font-weight:500; }
   .acct-you{ font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-left:4px; }
+  /* employee tag list — same style as tasks */
+  .emp-tag-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; min-height:28px; }
+  .emp-tag{ background:rgba(79,209,197,.08); border:1px solid rgba(79,209,197,.25); border-radius:100px; padding:5px 12px 5px 14px; font-size:12px; font-family:'DM Mono',monospace; display:flex; align-items:center; gap:8px; color:var(--accent2); }
 
 
   /* assign */
@@ -299,12 +312,15 @@
   .sched-table tr.row-header td{ background:rgba(74,222,128,.06); }
   .sched-table tr.row-header td.td-label{ color:var(--green); font-size:10px; letter-spacing:.5px; }
 
-  /* name pills inside cells */
+  /* name grid inside cells — 4 across row layout */
+  .cell-names{ display:flex; flex-wrap:wrap; gap:3px; align-items:flex-start; }
   .sched-name-pill{
-    display:block; background:var(--surface); border:1px solid var(--border);
-    border-radius:5px; padding:2px 6px; font-size:10px; margin:1px 0;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;
-    line-height:1.4;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:5px; padding:2px 7px; font-size:10px;
+    white-space:nowrap; cursor:default; line-height:1.5;
+    flex: 0 0 calc(25% - 3px); /* 4 per row */
+    min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:center;
+    box-sizing:border-box;
   }
   .sched-name-pill.mine{ background:rgba(232,197,71,.15); border-color:rgba(232,197,71,.4); color:var(--accent); }
   .sched-name-pill.editable{ cursor:pointer; }
@@ -448,7 +464,7 @@
           <input type="text" id="empInput" placeholder="New employee name…" onkeydown="if(event.key==='Enter')addEmployee()">
           <button class="btn btn-primary" onclick="addEmployee()">Add</button>
         </div>
-        <div class="acct-list" id="empList"></div>
+        <div class="emp-tag-list" id="empList"></div>
       </div>
       <div class="card">
         <div class="card-title">📋 Task Types</div>
@@ -535,7 +551,7 @@
 </div>
 
   <!-- SCHEDULE VIEW — monthly, split by week -->
-  <div id="scheduleView" class="main" style="display:none;">
+  <div id="scheduleView" class="main full-width" style="display:none;">
     <div class="sched-nav">
       <h2>📆 Monthly Schedule</h2>
       <div class="month-picker">
@@ -551,7 +567,7 @@
   </div>
 
   <!-- PRE-APPROVED LEAVES VIEW -->
-  <div id="leaveView" class="main" style="display:none;">
+  <div id="leaveView" class="main full-width" style="display:none;">
     <div class="sched-nav">
       <h2>🌴 Pre-Approved Leaves</h2>
       <div class="month-picker">
@@ -933,12 +949,9 @@ function renderEmpList(){
   const el=document.getElementById('empList');
   if(!S.employees.length){el.innerHTML='<span style="color:var(--muted);font-size:13px;">No employees yet.</span>';return;}
   el.innerHTML=S.employees.map(e=>`
-    <div class="acct-row">
-      <div class="acct-info">
-        <div class="acct-avatar e">${e.charAt(0).toUpperCase()}</div>
-        <span class="acct-name">${e}</span>
-      </div>
-    </div>`).join('');
+    <span class="emp-tag">
+      ${e}<span class="del" onclick="removeEmployee(${JSON.stringify(e)})">×</span>
+    </span>`).join('');
 }
 function renderTaskList(){
   const el=document.getElementById('taskList');
@@ -1172,19 +1185,20 @@ const _pillRegistry = {};
 let _pillId = 0;
 
 function renderNamePills(names, ctx){
-  if(!names.length) return isAdmin ? '' : '<span style="color:var(--border);font-size:10px;">—</span>';
-  return names.map(n=>{
+  if(!names.length) return isAdmin ? '<div class="cell-names"></div>' : '<div class="cell-names"><span style="color:var(--border);font-size:10px;">—</span></div>';
+  const pills = names.map(n=>{
     if(isAdmin){
       const pid = '_p'+(++_pillId);
       _pillRegistry[pid] = {name:n, ctx};
       return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''} editable"
         data-pid="${pid}" title="Click to remove: ${n.replace(/"/g,'&quot;')}"
         onclick="handlePillRemove(this)">
-        ${n}<span style="opacity:.35;font-size:9px;"> ×</span>
+        ${n}<span style="opacity:.3;font-size:8px;"> ×</span>
       </span>`;
     }
     return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''}" title="${n}">${n}</span>`;
   }).join('');
+  return `<div class="cell-names">${pills}</div>`;
 }
 
 function handlePillRemove(el){
@@ -1286,8 +1300,15 @@ function renderLeaveView(){
 
   const content = document.getElementById('leaveViewContent');
 
-  // All leave entries for this month
-  const monthLeaves = S.leaveEntries.filter(e=>e.leave_type==='Pre Approved Leave'&&e.schedule_date.startsWith(ym));
+  // All pre-approved leaves for the selected month (accurate by schedule_date)
+  const monthLeaves = S.leaveEntries.filter(e=>
+    e.leave_type==='Pre Approved Leave' && e.schedule_date.startsWith(ym)
+  );
+
+  // Also get distinct months that have ANY leave so admin can navigate
+  const allLeaveMonths = [...new Set(
+    S.leaveEntries.filter(e=>e.leave_type==='Pre Approved Leave').map(e=>e.schedule_date.slice(0,7))
+  )].sort();
 
   // Group by employee → sorted date list
   const byEmp = {};
@@ -1298,7 +1319,21 @@ function renderLeaveView(){
   Object.values(byEmp).forEach(arr=>arr.sort());
   const empNames = Object.keys(byEmp).sort();
 
-  // Admin add-leave form
+  // Quick-jump pills to months that have leaves
+  const monthJumps = allLeaveMonths.length > 1 ? `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+      <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;align-self:center;">Jump to:</span>
+      ${allLeaveMonths.map(mo=>{
+        const [my,mm]=mo.split('-').map(Number);
+        const isActive = mo===ym;
+        return `<button class="btn btn-ghost${isActive?' af':''}" style="padding:4px 10px;font-size:11px;"
+          onclick="document.getElementById('leaveMonthAnchor').value='${mo}';renderLeaveView();">
+          ${MONTH_NAMES[mm-1]} ${my}
+        </button>`;
+      }).join('')}
+    </div>` : '';
+
+  // Admin add-leave form — no min date restriction so future months work freely
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
       <div class="card-title">➕ Add Pre-Approved Leave</div>
@@ -1314,19 +1349,20 @@ function renderLeaveView(){
         <div class="fg"><label>To Date</label><input type="date" id="lvTo" style="margin-top:6px;"></div>
         <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Leave</button>
       </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Tip: You can add leaves for any month — past, current, or future. The view will auto-navigate to the correct month after saving.</p>
     </div>` : '';
 
   if(!empNames.length){
-    content.innerHTML = adminAdd + `<div class="empty" style="grid-column:1/-1;"><div class="ico">🌴</div><h3>No pre-approved leaves this month</h3><p>${isAdmin?'Use the form above to add leaves.':'Check another month or contact your admin.'}</p></div>`;
+    content.innerHTML = adminAdd + monthJumps + `<div class="empty"><div class="ico">🌴</div><h3>No pre-approved leaves for ${MONTH_NAMES[m-1]} ${y}</h3><p>${isAdmin?'Use the form above to add leaves for any date.':'Check another month or contact your admin.'}</p></div>`;
     return;
   }
 
-  // One row per employee: name | date chips (all in one row)
+  // One row per employee: name | date chips inline
   const rows = empNames.map(emp=>{
     const dates = byEmp[emp];
-    // Format consecutive ranges for display
     const chips = dates.map(d=>{
-      const displayDate = new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const dd = new Date(d+'T00:00:00');
+      const displayDate = dd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
       const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
       if(isAdmin){
         const pid = '_p'+(++_pillId);
@@ -1337,28 +1373,28 @@ function renderLeaveView(){
     }).join('');
 
     return `<tr>
-      <td style="white-space:nowrap;min-width:160px;">
+      <td style="white-space:nowrap;min-width:180px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="leave-emp-avatar">${emp.charAt(0).toUpperCase()}</div>
           <div>
             <div style="font-weight:600;font-size:14px;">${emp}</div>
-            <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${dates.length} day${dates.length!==1?'s':''}</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${dates.length} day${dates.length!==1?'s':''} · ${MONTH_NAMES[m-1]} ${y}</div>
           </div>
         </div>
       </td>
-      <td style="line-height:1.8;">${chips}</td>
+      <td style="line-height:2;">${chips}</td>
     </tr>`;
   }).join('');
 
   const tableHtml = `
     <div style="overflow-x:auto;border-radius:16px;border:1px solid rgba(167,139,250,.25);">
       <table class="leave-list-table">
-        <thead><tr><th style="min-width:160px;">Employee</th><th>Leave Dates</th></tr></thead>
+        <thead><tr><th style="min-width:180px;">Employee</th><th>Leave Dates — ${MONTH_NAMES[m-1]} ${y}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
 
-  content.innerHTML = adminAdd + tableHtml;
+  content.innerHTML = adminAdd + monthJumps + tableHtml;
 }
 
 async function addLeaveRange(){
@@ -1377,6 +1413,10 @@ async function addLeaveRange(){
   if(!toInsert.length){ showToast('All dates already added'); return; }
   const {error} = await sb.from('leave_entries').insert(toInsert.map(d=>({schedule_date:d,employee_name:emp,leave_type:'Pre Approved Leave'})));
   if(error){ showToast('Error: '+error.message,true); return; }
+  // Auto-navigate to the month of the "from" date so the admin sees the result
+  const targetYm = from.slice(0,7);
+  const anchor = document.getElementById('leaveMonthAnchor');
+  if(anchor) anchor.value = targetYm;
   showToast(`✓ ${toInsert.length} leave day(s) added for ${emp}`);
 }
 

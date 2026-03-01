@@ -287,6 +287,39 @@
   .bulk-mode-tab{ flex:1; padding:8px; text-align:center; border-radius:var(--radius); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--muted); transition:all .15s; }
   .bulk-mode-tab.active{ background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); font-weight:700; }
 
+  /* day-of-week checkboxes for shift mode */
+  .bulk-day-checks{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .bdc{ display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:100px; font-size:12px; font-family:'DM Mono',monospace; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--muted); transition:all .15s; user-select:none; }
+  .bdc:hover{ border-color:var(--accent); color:var(--text); }
+  .bdc.on{ background:rgba(232,197,71,.1); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .bdc.sun{ border-color:rgba(248,113,113,.3); color:var(--red); background:rgba(248,113,113,.06); }
+  .bdc.sun.on{ background:rgba(248,113,113,.15); border-color:var(--red); }
+  .bdc.sat{ border-color:rgba(96,165,250,.3); color:#60a5fa; background:rgba(96,165,250,.06); }
+  .bdc.sat.on{ background:rgba(96,165,250,.15); border-color:#60a5fa; }
+
+  /* day-of-week pills for dayoff mode */
+  .bulk-dow-pills{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .bdp{ display:inline-flex; align-items:center; gap:5px; padding:6px 16px; border-radius:100px; font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--muted); transition:all .15s; user-select:none; font-family:'DM Sans',sans-serif; }
+  .bdp:hover{ border-color:rgba(249,168,212,.5); color:#f9a8d4; }
+  .bdp.on{ background:rgba(249,168,212,.1); border-color:rgba(249,168,212,.5); color:#f9a8d4; font-weight:600; }
+  .bdp.sun{ border-color:rgba(248,113,113,.3); color:var(--red); }
+  .bdp.sun.on{ background:rgba(248,113,113,.12); border-color:var(--red); }
+  .bdp.sat{ border-color:rgba(96,165,250,.3); color:#60a5fa; }
+  .bdp.sat.on{ background:rgba(96,165,250,.12); border-color:#60a5fa; }
+
+  /* color-coded name pills (admin only) — shift colors */
+  .sched-name-pill.shift-c0{ background:rgba(79,209,197,.12); border-color:rgba(79,209,197,.35); color:var(--accent2); }
+  .sched-name-pill.shift-c1{ background:rgba(167,139,250,.12); border-color:rgba(167,139,250,.35); color:var(--purple); }
+  .sched-name-pill.shift-c2{ background:rgba(251,191,36,.12); border-color:rgba(251,191,36,.35); color:#fbbf24; }
+  .sched-name-pill.shift-c3{ background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.35); color:#34d399; }
+  .sched-name-pill.shift-c4{ background:rgba(248,113,113,.12); border-color:rgba(248,113,113,.35); color:var(--red); }
+  .sched-name-pill.shift-c5{ background:rgba(96,165,250,.12); border-color:rgba(96,165,250,.35); color:#60a5fa; }
+  .sched-name-pill.shift-dayoff{ background:rgba(249,168,212,.1); border-color:rgba(249,168,212,.35); color:#f9a8d4; }
+  .sched-name-pill.shift-leave{ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.35); color:#c084fc; }
+  /* Legend */
+  .sched-color-legend{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .scl-item{ display:inline-flex; align-items:center; gap:5px; font-size:10px; font-family:'DM Mono',monospace; padding:2px 8px; border-radius:100px; border:1px solid; opacity:.9; }
+
   /* schedule table */
   .sched-table{ border-collapse:collapse; width:100%; }
   .sched-table th{
@@ -613,6 +646,10 @@
       <div id="monthLabel" style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;"></div>
       <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">⚡ Bulk Assign</button>
     </div>
+    <!-- Admin-only color legend -->
+    <div id="schedLegend" style="display:none; margin-bottom:14px;">
+      <div class="sched-color-legend" id="schedLegendItems"></div>
+    </div>
     <div id="schedWeekBlocks"></div>
   </div>
 
@@ -634,31 +671,40 @@
 
 <!-- BULK ASSIGN MODAL -->
 <div class="modal-overlay" id="bulkModal">
-  <div class="modal" style="max-width:580px;">
+  <div class="modal" style="max-width:600px; max-height:90vh; overflow-y:auto;">
     <div class="modal-close" onclick="closeBulkModal()">✕</div>
     <div class="modal-title">⚡ Bulk Assign</div>
-    <div class="modal-sub" id="bulkModalSub">Assign employees to a shift or day-off for a specific week.</div>
+    <div class="modal-sub" id="bulkModalSub">Assign employees to a shift or mark day-off in bulk.</div>
 
-    <!-- Mode toggle: Shift or Day Off -->
-    <div class="bulk-mode-tabs" style="margin-bottom:16px;">
-      <div class="bulk-mode-tab active" id="bulkModeShift" onclick="setBulkMode('shift')">🕐 Shift</div>
-      <div class="bulk-mode-tab" id="bulkModeDayoff" onclick="setBulkMode('dayoff')">🌙 Day Off</div>
+    <!-- Mode toggle -->
+    <div class="bulk-mode-tabs" style="margin-bottom:18px;">
+      <div class="bulk-mode-tab active" id="bulkModeShift"  onclick="setBulkMode('shift')">🕐 Shift</div>
+      <div class="bulk-mode-tab"        id="bulkModeDayoff" onclick="setBulkMode('dayoff')">🌙 Day Off</div>
     </div>
 
-    <!-- Shift selector (hidden in dayoff mode) -->
-    <div id="bulkShiftRow" style="margin-bottom:14px;">
-      <label style="margin-bottom:6px;">Shift Type</label>
-      <select id="bulkShiftSel" style="margin-top:6px;" onchange="refreshBulkEmployees()">
-        <option value="">— Choose shift —</option>
-      </select>
+    <!-- ── SHIFT MODE ── -->
+    <div id="bulkShiftSection">
+      <div style="margin-bottom:14px;">
+        <label style="margin-bottom:6px;">Shift Type</label>
+        <select id="bulkShiftSel" style="margin-top:6px;" onchange="refreshBulkEmployees()">
+          <option value="">— Choose shift —</option>
+        </select>
+      </div>
+      <label style="margin-bottom:8px;display:block;">Week</label>
+      <div class="bulk-week-tabs" id="bulkWeekTabs"></div>
+      <label style="margin-bottom:8px;display:block;">Days in Week <span style="font-size:10px;color:var(--muted);font-weight:400;">(uncheck to exclude)</span></label>
+      <div class="bulk-day-checks" id="bulkDayChecks"></div>
     </div>
 
-    <!-- Week selector pills -->
-    <label style="margin-bottom:8px;display:block;">Week</label>
-    <div class="bulk-week-tabs" id="bulkWeekTabs"></div>
+    <!-- ── DAYOFF MODE ── -->
+    <div id="bulkDayoffSection" style="display:none;">
+      <label style="margin-bottom:8px;display:block;">Select Days of Week <span style="font-size:10px;color:var(--muted);font-weight:400;">(applies to whole month)</span></label>
+      <div class="bulk-dow-pills" id="bulkDowPills"></div>
+      <div style="margin-top:4px;font-size:11px;color:var(--muted);" id="bulkDowDatePreview"></div>
+    </div>
 
-    <!-- Employee grid -->
-    <label style="margin-bottom:8px;display:block;">Select Employees</label>
+    <!-- Employee grid (shared) -->
+    <label style="margin-bottom:8px;display:block;margin-top:14px;">Select Employees</label>
     <div class="emp-check-grid" id="bulkEmpGrid"></div>
 
     <div style="display:flex;gap:10px;margin-top:18px;">
@@ -1267,13 +1313,15 @@ function getNamesForLeave(date, leaveType){
 const _pillRegistry = {};
 let _pillId = 0;
 
-function renderNamePills(names, ctx){
+function renderNamePills(names, ctx, colorClass=''){
   if(!names.length) return '<div class="cell-names"></div>';
   const pills = names.map(n=>{
+    // Color class only shown to admins
+    const cc = isAdmin && colorClass ? ` ${colorClass}` : '';
     if(isAdmin){
       const pid = '_p'+(++_pillId);
       _pillRegistry[pid] = {name:n, ctx};
-      return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''} editable"
+      return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''}${cc} editable"
         data-pid="${pid}" title="Remove: ${n.replace(/"/g,'&quot;')}"
         onclick="handlePillRemove(this)">${n}<span class="px">×</span></span>`;
     }
@@ -1310,9 +1358,36 @@ function renderSchedule(){
   const label = document.getElementById('monthLabel');
   if(label) label.textContent = MONTH_NAMES[m-1]+' '+y;
 
-  // Show bulk button only for admins
   const bb = document.getElementById('bulkBtn');
   if(bb) bb.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  // Build shift color map (idx 0-5 cycling)
+  const shiftColorMap = {}; // shiftTypeId → colorClass
+  S.shiftTypes.forEach((st,i)=>{ shiftColorMap[st.id] = `shift-c${i%6}`; });
+
+  // Build & show admin color legend
+  const legendEl = document.getElementById('schedLegend');
+  const legendItems = document.getElementById('schedLegendItems');
+  if(legendEl && legendItems){
+    legendEl.style.display = isAdmin ? 'block' : 'none';
+    if(isAdmin){
+      const colors = [
+        {cls:'shift-c0',bg:'rgba(79,209,197,.12)',bc:'rgba(79,209,197,.35)',tc:'var(--accent2)'},
+        {cls:'shift-c1',bg:'rgba(167,139,250,.12)',bc:'rgba(167,139,250,.35)',tc:'var(--purple)'},
+        {cls:'shift-c2',bg:'rgba(251,191,36,.12)',bc:'rgba(251,191,36,.35)',tc:'#fbbf24'},
+        {cls:'shift-c3',bg:'rgba(52,211,153,.12)',bc:'rgba(52,211,153,.35)',tc:'#34d399'},
+        {cls:'shift-c4',bg:'rgba(248,113,113,.12)',bc:'rgba(248,113,113,.35)',tc:'var(--red)'},
+        {cls:'shift-c5',bg:'rgba(96,165,250,.12)',bc:'rgba(96,165,250,.35)',tc:'#60a5fa'},
+      ];
+      let html = S.shiftTypes.map((st,i)=>{
+        const c = colors[i%6];
+        return `<span class="scl-item" style="background:${c.bg};border-color:${c.bc};color:${c.tc};">● ${st.name}</span>`;
+      }).join('');
+      html += `<span class="scl-item" style="background:rgba(249,168,212,.1);border-color:rgba(249,168,212,.35);color:#f9a8d4;">● Dayoff</span>`;
+      html += `<span class="scl-item" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.35);color:#c084fc;">● Pre-Approved Leave</span>`;
+      legendItems.innerHTML = html;
+    }
+  }
 
   const allDates = getMonthDates(ym);
   const weeks    = splitIntoWeeks(allDates);
@@ -1330,35 +1405,30 @@ function renderSchedule(){
     const fmt = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const weekLabel = `Week ${wi+1} &nbsp;·&nbsp; ${fmt(weekStart)} – ${fmt(weekEnd)}`;
 
-    // Build rows
     const rows = [];
     for(const st of S.shiftTypes){
+      const cc = shiftColorMap[st.id] || '';
       const cells = weekDates.map(d=>{
         const names = getNamesForShift(d, st.id);
         const ctx = {type:'shift', date:d, shiftTypeId:st.id, leaveType:null};
-        return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}${addBtn(ctx)}</td>`;
+        return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx,cc)}${addBtn(ctx)}</td>`;
       }).join('');
+      rows.push(`<tr data-shiftid="${st.id}"><td class="td-label">${st.name}</td>${cells}</tr>`);
 
-      rows.push(`<tr data-shiftid="${st.id}">
-        <td class="td-label">${st.name}</td>${cells}
-      </tr>`);
-
-      // Dayoff row after PayPro & Batch Upload
       if(st.name==='PayPro & Batch Upload'){
         const dayCells = weekDates.map(d=>{
           const names = getNamesForLeave(d,'Dayoff');
           const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Dayoff'};
-          return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}${addBtn(ctx)}</td>`;
+          return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx,'shift-dayoff')}${addBtn(ctx)}</td>`;
         }).join('');
         rows.push(`<tr class="row-dayoff"><td class="td-label">Dayoff</td>${dayCells}</tr>`);
       }
     }
 
-    // Pre Approved Leave row — NO + button (managed from Leaves tab)
     const lvCells = weekDates.map(d=>{
       const names = getNamesForLeave(d,'Pre Approved Leave');
       const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
-      return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx)}</td>`;
+      return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx,'shift-leave')}</td>`;
     }).join('');
     rows.push(`<tr class="row-leave"><td class="td-label">Pre Approved Leave</td>${lvCells}</tr>`);
 
@@ -1527,50 +1597,126 @@ async function addLeaveRange(){
 }
 
 // ─── BULK ASSIGN MODAL ────────────────────────────────────────────────────
-let _bulkMode = 'shift';   // 'shift' | 'dayoff'
-let _bulkWeeks = [];       // array of weekDates arrays for current month
-let _bulkWeekIdx = 0;      // selected week index
+let _bulkMode = 'shift';
+let _bulkWeeks = [];
+let _bulkWeekIdx = 0;
+let _bulkMonthDates = []; // all dates in month for dayoff DOW mode
+
+const DOW_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 function setBulkMode(mode){
   _bulkMode = mode;
-  document.getElementById('bulkModeShift').classList.toggle('active', mode==='shift');
+  document.getElementById('bulkModeShift').classList.toggle('active',  mode==='shift');
   document.getElementById('bulkModeDayoff').classList.toggle('active', mode==='dayoff');
-  document.getElementById('bulkShiftRow').style.display = mode==='shift' ? 'block' : 'none';
+  document.getElementById('bulkShiftSection').style.display  = mode==='shift'  ? 'block' : 'none';
+  document.getElementById('bulkDayoffSection').style.display = mode==='dayoff' ? 'block' : 'none';
   document.getElementById('bulkModalSub').textContent = mode==='shift'
-    ? 'Assign employees to a shift for a specific week.'
-    : 'Mark employees as Day Off for a specific week.';
+    ? 'Assign employees to a shift for selected week and days.'
+    : 'Mark employees as Day Off for selected days of the week (whole month).';
+  if(mode==='dayoff') updateDowPreview();
   refreshBulkEmployees();
 }
 
 function selectBulkWeek(idx){
   _bulkWeekIdx = idx;
   document.querySelectorAll('.bwt').forEach((el,i)=>el.classList.toggle('active', i===idx));
+  // Rebuild day checkboxes for new week
+  buildShiftDayChecks();
   refreshBulkEmployees();
+}
+
+function toggleBdc(el){
+  el.classList.toggle('on');
+  refreshBulkEmployees();
+}
+
+function toggleBdp(el){
+  el.classList.toggle('on');
+  updateDowPreview();
+  refreshBulkEmployees();
+}
+
+function buildShiftDayChecks(){
+  const weekDates = _bulkWeeks[_bulkWeekIdx] || [];
+  const el = document.getElementById('bulkDayChecks');
+  if(!el) return;
+  el.innerHTML = weekDates.map(d=>{
+    const dow = new Date(d+'T00:00:00').getDay();
+    const cls = dow===0?'sun':dow===6?'sat':'';
+    return `<label class="bdc on ${cls}" title="${d}">
+      <input type="checkbox" checked style="display:none;" onchange="toggleBdc(this.parentElement)">
+      ${DOW_SHORT[dow]} ${new Date(d+'T00:00:00').getDate()}
+    </label>`;
+  }).join('');
+}
+
+function getSelectedShiftDates(){
+  return [...document.querySelectorAll('#bulkDayChecks .bdc.on')]
+    .map(el=>el.title).filter(Boolean);
+}
+
+function buildDowPills(){
+  const el = document.getElementById('bulkDowPills');
+  if(!el) return;
+  el.innerHTML = DOW_FULL.map((name,i)=>{
+    const cls = i===0?'sun':i===6?'sat':'';
+    // Default: Mon-Fri on, Sat-Sun off
+    const isOn = (i>=1&&i<=5);
+    return `<div class="bdp ${cls}${isOn?' on':''}" data-dow="${i}" onclick="toggleBdp(this)">${name}</div>`;
+  }).join('');
+}
+
+function getSelectedDowDates(){
+  const selectedDows = [...document.querySelectorAll('#bulkDowPills .bdp.on')].map(el=>parseInt(el.dataset.dow));
+  return _bulkMonthDates.filter(d=>{
+    const dow = new Date(d+'T00:00:00').getDay();
+    return selectedDows.includes(dow);
+  });
+}
+
+function updateDowPreview(){
+  const dates = getSelectedDowDates();
+  const el = document.getElementById('bulkDowDatePreview');
+  if(!el) return;
+  if(!dates.length){ el.textContent='No dates selected'; return; }
+  // Show first few dates
+  const preview = dates.slice(0,6).map(d=>{
+    const [y,m,day]=d.split('-').map(Number);
+    return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${day}`;
+  }).join(', ');
+  el.textContent = `${dates.length} date(s): ${preview}${dates.length>6?'…':''}`;
+}
+
+function getActiveDates(){
+  if(_bulkMode==='shift') return getSelectedShiftDates();
+  return getSelectedDowDates();
 }
 
 function refreshBulkEmployees(){
   const grid = document.getElementById('bulkEmpGrid');
   if(!grid) return;
-  const weekDates = _bulkWeeks[_bulkWeekIdx] || [];
+  const dates = getActiveDates();
 
   if(_bulkMode === 'shift'){
     const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
 
     grid.innerHTML = S.employees.map(emp=>{
-      // Disabled if assigned to any OTHER shift any day this week
-      let takenShiftName = null;
+      // Disabled if in another shift OR has dayoff on any of the selected dates
+      let takenLabel = null;
       for(const st of S.shiftTypes){
         if(st.id === shiftId) continue;
-        if(weekDates.some(d => getNamesForShift(d, st.id).includes(emp))){
-          takenShiftName = st.name; break;
+        if(dates.some(d => getNamesForShift(d, st.id).includes(emp))){
+          takenLabel = st.name; break;
         }
       }
-      // Pre-check if already in THIS shift for any day this week
-      const alreadyThisShift = !isNaN(shiftId) && weekDates.some(d => getNamesForShift(d, shiftId).includes(emp));
-      const disabled = !!takenShiftName;
+      if(!takenLabel && dates.some(d => getNamesForLeave(d,'Dayoff').includes(emp))){
+        takenLabel = 'Day Off';
+      }
+      const alreadyThisShift = !isNaN(shiftId) && dates.some(d => getNamesForShift(d, shiftId).includes(emp));
+      const disabled = !!takenLabel;
       const badge = disabled
-        ? `<span class="shift-label-badge" title="Already in: ${takenShiftName}">in ${takenShiftName.length>12?takenShiftName.slice(0,10)+'…':takenShiftName}</span>`
-        : '';
+        ? `<span class="shift-label-badge">${takenLabel.length>14?takenLabel.slice(0,12)+'…':takenLabel}</span>` : '';
       return `<div class="ecc${alreadyThisShift&&!disabled?' on':''}${disabled?' disabled-shift':''}"
         data-emp="${emp.replace(/"/g,'&quot;')}"
         onclick="${disabled?'':'toggleEcc(this)'}">
@@ -1579,19 +1725,18 @@ function refreshBulkEmployees(){
     }).join('');
 
   } else {
-    // Dayoff mode — disable employees already in any shift this week
+    // Dayoff mode — disable employees in any shift on those dates OR already have dayoff
     grid.innerHTML = S.employees.map(emp=>{
-      let takenShiftName = null;
+      let takenLabel = null;
       for(const st of S.shiftTypes){
-        if(weekDates.some(d => getNamesForShift(d, st.id).includes(emp))){
-          takenShiftName = st.name; break;
+        if(dates.some(d => getNamesForShift(d, st.id).includes(emp))){
+          takenLabel = st.name; break;
         }
       }
-      const alreadyDayoff = weekDates.some(d => getNamesForLeave(d,'Dayoff').includes(emp));
-      const disabled = !!takenShiftName;
+      const alreadyDayoff = dates.some(d => getNamesForLeave(d,'Dayoff').includes(emp));
+      const disabled = !!takenLabel;
       const badge = disabled
-        ? `<span class="shift-label-badge" title="Already in: ${takenShiftName}">in ${takenShiftName.length>12?takenShiftName.slice(0,10)+'…':takenShiftName}</span>`
-        : '';
+        ? `<span class="shift-label-badge">${takenLabel.length>14?takenLabel.slice(0,12)+'…':takenLabel}</span>` : '';
       const on = alreadyDayoff && !disabled;
       return `<div class="ecc${on?' on':''}${disabled?' disabled-shift':''}"
         data-emp="${emp.replace(/"/g,'&quot;')}"
@@ -1605,32 +1750,41 @@ function refreshBulkEmployees(){
 function openBulkModal(){
   if(!isAdmin) return;
   const ym = getSelectedYearMonth();
-  const [y,m] = ym.split('-').map(Number);
 
-  // Build weeks for the current month
-  _bulkWeeks = splitIntoWeeks(getMonthDates(ym));
+  _bulkMonthDates = getMonthDates(ym);
+  _bulkWeeks = splitIntoWeeks(_bulkMonthDates);
   _bulkWeekIdx = 0;
 
-  // Populate week selector pills
+  // Week pills
   const weekTabsEl = document.getElementById('bulkWeekTabs');
   weekTabsEl.innerHTML = _bulkWeeks.map((wk, i)=>{
     const ws = new Date(wk[0]+'T00:00:00');
     const we = new Date(wk[wk.length-1]+'T00:00:00');
     const fmt = d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return `<div class="bwt${i===0?' active':''}" onclick="selectBulkWeek(${i})">Week ${i+1}<br><span style="font-size:10px;opacity:.7;">${fmt(ws)}–${fmt(we)}</span></div>`;
+    return `<div class="bwt${i===0?' active':''}" onclick="selectBulkWeek(${i})">
+      Week ${i+1} <span style="font-size:10px;opacity:.7;">${fmt(ws)}–${fmt(we)}</span>
+    </div>`;
   }).join('');
 
-  // Populate shift dropdown
+  // Day checkboxes for shift mode
+  buildShiftDayChecks();
+
+  // DOW pills for dayoff mode
+  buildDowPills();
+  updateDowPreview();
+
+  // Shift dropdown
   const sel = document.getElementById('bulkShiftSel');
   sel.innerHTML = '<option value="">— Choose shift —</option>' +
     S.shiftTypes.map(st=>`<option value="${st.id}">${st.name}</option>`).join('');
 
-  // Reset mode to shift
+  // Reset to shift mode
   _bulkMode = 'shift';
   document.getElementById('bulkModeShift').classList.add('active');
   document.getElementById('bulkModeDayoff').classList.remove('active');
-  document.getElementById('bulkShiftRow').style.display = 'block';
-  document.getElementById('bulkModalSub').textContent = 'Assign employees to a shift for a specific week.';
+  document.getElementById('bulkShiftSection').style.display  = 'block';
+  document.getElementById('bulkDayoffSection').style.display = 'none';
+  document.getElementById('bulkModalSub').textContent = 'Assign employees to a shift for selected week and days.';
 
   refreshBulkEmployees();
   document.getElementById('bulkModal').classList.add('open');
@@ -1641,8 +1795,8 @@ document.getElementById('bulkModal').addEventListener('click',function(e){ if(e.
 
 async function saveBulkAssign(){
   if(!isAdmin) return;
-  const weekDates = _bulkWeeks[_bulkWeekIdx] || [];
-  if(!weekDates.length){ showToast('No week selected'); return; }
+  const dates = getActiveDates();
+  if(!dates.length){ showToast(_bulkMode==='shift'?'Select at least one day':'Select at least one day of week'); return; }
 
   const selEmps = [...document.querySelectorAll('#bulkEmpGrid .ecc.on')].map(el=>el.dataset.emp).filter(Boolean);
   if(!selEmps.length){ showToast('Select at least one employee'); return; }
@@ -1650,9 +1804,8 @@ async function saveBulkAssign(){
   if(_bulkMode === 'shift'){
     const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
     if(!shiftId){ showToast('Choose a shift type'); return; }
-
     const rows = [];
-    for(const d of weekDates){
+    for(const d of dates){
       const existing = getNamesForShift(d, shiftId);
       for(const emp of selEmps){
         if(!existing.includes(emp)) rows.push({schedule_date:d, shift_type_id:shiftId, employee_name:emp});
@@ -1664,13 +1817,10 @@ async function saveBulkAssign(){
       const {error} = await sb.from('schedule_entries').insert(rows.slice(i,i+500));
       if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
     }
-    const shiftName = S.shiftTypes.find(s=>s.id===shiftId)?.name||'Shift';
-    showToast(`✓ Assigned ${rows.length} slot(s) to ${shiftName}`);
-
+    showToast(`✓ Assigned ${rows.length} slot(s) to ${S.shiftTypes.find(s=>s.id===shiftId)?.name||'Shift'}`);
   } else {
-    // Dayoff mode
     const rows = [];
-    for(const d of weekDates){
+    for(const d of dates){
       const existing = getNamesForLeave(d,'Dayoff');
       for(const emp of selEmps){
         if(!existing.includes(emp)) rows.push({schedule_date:d, employee_name:emp, leave_type:'Dayoff'});

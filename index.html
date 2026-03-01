@@ -326,26 +326,30 @@
   /* schedule table */
   .sched-table{ border-collapse:collapse; width:100%; }
   .sched-table th{
-    background:var(--surface2); padding:7px 10px; font-size:10px; font-weight:700;
+    background:var(--surface2); padding:8px 10px; font-size:10px; font-weight:700;
     color:var(--muted); text-transform:uppercase; letter-spacing:.5px;
     border-bottom:1px solid var(--border); border-right:1px solid var(--border);
-    text-align:center; white-space:nowrap; min-width:110px;
+    text-align:center; white-space:nowrap; min-width:130px;
   }
   .sched-table th.th-label{ text-align:left; min-width:175px; position:sticky; left:0; z-index:2; background:var(--surface2); border-right:2px solid var(--border); }
   .sched-table th.sun{ color:var(--red); background:rgba(248,113,113,.07); }
   .sched-table th.sat{ color:#60a5fa; background:rgba(96,165,250,.05); }
   .sched-table th.today-col{ background:rgba(232,197,71,.1); color:var(--accent); }
-  .sched-table th .th-date{ font-size:13px; font-weight:800; }
-  .sched-table th .th-day{ font-size:9px; margin-top:1px; opacity:.75; }
+  .sched-table th .th-date{ font-size:14px; font-weight:800; }
+  .sched-table th .th-day{ font-size:10px; margin-top:2px; opacity:.85; text-transform:capitalize; letter-spacing:.3px; }
 
   .sched-table td{
-    padding:5px 8px; font-size:12px; border-bottom:1px solid var(--border);
-    border-right:1px solid var(--border); vertical-align:top; min-width:110px;
+    padding:6px 8px; font-size:12px; border-bottom:1px solid var(--border);
+    border-right:1px solid var(--border); vertical-align:middle; min-width:130px;
+    text-align:center;
   }
+  .sched-table td .cell-names{ justify-content:center; }
+  .sched-table td .sched-add-btn{ margin:4px auto 0; display:flex; }
   .sched-table td.td-label{
     font-weight:700; font-size:11px; white-space:nowrap; color:var(--text);
     background:var(--surface2); position:sticky; left:0; z-index:1;
-    border-right:2px solid var(--border); padding:6px 12px;
+    border-right:2px solid var(--border); padding:8px 12px;
+    text-align:left; vertical-align:middle;
   }
   .sched-table td.today-col{ background:rgba(232,197,71,.04); }
   .sched-table tr:last-child td{ border-bottom:none; }
@@ -648,6 +652,7 @@
       </div>
       <div id="monthLabel" style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;"></div>
       <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">⚡ Bulk Assign</button>
+      <button id="deleteMonthBtn" class="btn" onclick="confirmDeleteMonth()" style="display:none;padding:9px 18px;font-size:13px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">🗑 Delete Month</button>
     </div>
     <!-- Admin-only color legend -->
     <div id="schedLegend" style="display:none; margin-bottom:14px;">
@@ -1296,14 +1301,14 @@ function colClass(d){
 }
 
 function buildWeekHeader(weekDates){
+  const FULL_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   return `<tr>
     <th class="th-label">Shifting</th>
     ${weekDates.map(d=>{
       const dow = new Date(d+'T00:00:00').getDay();
-      const dayLabel = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dow];
       return `<th class="${colClass(d)}">
         <div class="th-date">${new Date(d+'T00:00:00').getDate()}</div>
-        <div class="th-day">${dayLabel}</div>
+        <div class="th-day">${FULL_DAYS[dow]}</div>
       </th>`;
     }).join('')}
   </tr>`;
@@ -1358,6 +1363,46 @@ function handleAddBtn(el){
   openSchedModal(entry.ctx);
 }
 
+function confirmDeleteMonth(){
+  if(!isAdmin) return;
+  const ym = getSelectedYearMonth();
+  const [y,m] = ym.split('-').map(Number);
+  const monthName = MONTH_NAMES[m-1]+' '+y;
+  openModal(
+    '🗑 Delete Month Schedule',
+    `Delete ALL shift and day-off assignments for ${monthName}? This cannot be undone. (Pre-Approved Leaves are kept.)`,
+    () => deleteMonthSchedule(ym)
+  );
+  // Change confirm button label to "Delete"
+  const btn = document.getElementById('modalConfirmBtn');
+  if(btn) btn.textContent = 'Delete All';
+}
+
+async function deleteMonthSchedule(ym){
+  if(!isAdmin) return;
+  const dates = getMonthDates(ym);
+  const first = dates[0], last = dates[dates.length-1];
+  showToast('Deleting…');
+  try {
+    // Delete all schedule_entries for this month
+    const {error:e1} = await sb.from('schedule_entries')
+      .delete()
+      .gte('schedule_date', first)
+      .lte('schedule_date', last);
+    if(e1) throw e1;
+    // Delete Dayoff leave_entries for this month (not Pre Approved Leave)
+    const {error:e2} = await sb.from('leave_entries')
+      .delete()
+      .gte('schedule_date', first)
+      .lte('schedule_date', last)
+      .eq('leave_type','Dayoff');
+    if(e2) throw e2;
+    showToast(`✓ Cleared all shifts & day-offs for ${MONTH_NAMES[parseInt(ym.split('-')[1])-1]} ${ym.split('-')[0]}`);
+  } catch(err){
+    showToast('Error: '+err.message, true);
+  }
+}
+
 // ─── RENDER SCHEDULE (WEEK BLOCKS) ────────────────────────────────────────
 function renderSchedule(){
   const ym = getSelectedYearMonth();
@@ -1367,6 +1412,8 @@ function renderSchedule(){
 
   const bb = document.getElementById('bulkBtn');
   if(bb) bb.style.display = isAdmin ? 'inline-flex' : 'none';
+  const db = document.getElementById('deleteMonthBtn');
+  if(db) db.style.display = isAdmin ? 'inline-flex' : 'none';
 
   // Build shift color map (idx 0-5 cycling)
   const shiftColorMap = {}; // shiftTypeId → colorClass

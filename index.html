@@ -1700,14 +1700,18 @@ function refreshBulkEmployees(){
 
   if(_bulkMode === 'shift'){
     const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
+    const shiftObj = S.shiftTypes.find(s=>s.id===shiftId);
+    const isPayPro = shiftObj && shiftObj.name === 'PayPro & Batch Upload';
 
     grid.innerHTML = S.employees.map(emp=>{
-      // Disabled if in another shift OR has dayoff on any of the selected dates
+      // For PayPro: skip other-shift conflicts (can overlap). Still check dayoff.
       let takenLabel = null;
-      for(const st of S.shiftTypes){
-        if(st.id === shiftId) continue;
-        if(dates.some(d => getNamesForShift(d, st.id).includes(emp))){
-          takenLabel = st.name; break;
+      if(!isPayPro){
+        for(const st of S.shiftTypes){
+          if(st.id === shiftId) continue;
+          if(dates.some(d => getNamesForShift(d, st.id).includes(emp))){
+            takenLabel = st.name; break;
+          }
         }
       }
       if(!takenLabel && dates.some(d => getNamesForLeave(d,'Dayoff').includes(emp))){
@@ -1716,7 +1720,7 @@ function refreshBulkEmployees(){
       const alreadyThisShift = !isNaN(shiftId) && dates.some(d => getNamesForShift(d, shiftId).includes(emp));
       const disabled = !!takenLabel;
       const badge = disabled
-        ? `<span class="shift-label-badge">${takenLabel.length>14?takenLabel.slice(0,12)+'…':takenLabel}</span>` : '';
+        ? `<span class="shift-label-badge"${takenLabel==='Day Off'?' style="background:rgba(249,168,212,.12);border-color:rgba(249,168,212,.35);color:#f9a8d4;"':''}>${takenLabel.length>14?takenLabel.slice(0,12)+'…':takenLabel}</span>` : '';
       return `<div class="ecc${alreadyThisShift&&!disabled?' on':''}${disabled?' disabled-shift':''}"
         data-emp="${emp.replace(/"/g,'&quot;')}"
         onclick="${disabled?'':'toggleEcc(this)'}">
@@ -1841,38 +1845,50 @@ async function saveBulkAssign(){
 function openSchedModal(ctx){
   if(!isAdmin) return;
   schedCtx = ctx;
-  const title = ctx.type==='shift'
-    ? (S.shiftTypes.find(s=>s.id===ctx.shiftTypeId)?.name||'Shift')
-    : ctx.leaveType;
+  const shiftObj = ctx.type==='shift' ? S.shiftTypes.find(s=>s.id===ctx.shiftTypeId) : null;
+  const title = shiftObj ? shiftObj.name : ctx.leaveType;
   document.getElementById('schedModalTitle').textContent = title;
   document.getElementById('schedModalSub').textContent   = fmtDate(ctx.date);
 
   // Who is already in THIS cell
-  let assigned = ctx.type==='shift'
+  const assigned = ctx.type==='shift'
     ? getNamesForShift(ctx.date, ctx.shiftTypeId)
     : getNamesForLeave(ctx.date, ctx.leaveType);
 
-  // For shifts: build a map of emp → shift name for OTHER shifts on the same date
-  // so we can disable and label them
-  const takenByOtherShift = {}; // empName → otherShiftName
-  if(ctx.type==='shift'){
+  // PayPro & Batch Upload is a special shift — employees CAN be on other shifts too, no conflict
+  const isPayPro = shiftObj && shiftObj.name === 'PayPro & Batch Upload';
+
+  // Build conflict maps (only for non-PayPro shifts)
+  const takenByShift  = {}; // empName → otherShiftName
+  const hasDayoff = new Set(); // empNames with dayoff on this date
+
+  if(ctx.type === 'shift' && !isPayPro){
     for(const st of S.shiftTypes){
-      if(st.id === ctx.shiftTypeId) continue; // skip current shift
-      const othersOnDate = getNamesForShift(ctx.date, st.id);
-      othersOnDate.forEach(emp=>{
-        if(!takenByOtherShift[emp]) takenByOtherShift[emp] = st.name;
+      if(st.id === ctx.shiftTypeId) continue;
+      getNamesForShift(ctx.date, st.id).forEach(emp=>{
+        if(!takenByShift[emp]) takenByShift[emp] = st.name;
       });
     }
   }
 
+  // Always check dayoff conflicts (for all shifts including non-PayPro)
+  if(ctx.type === 'shift'){
+    getNamesForLeave(ctx.date, 'Dayoff').forEach(emp => hasDayoff.add(emp));
+  }
+
   document.getElementById('schedEmpGrid').innerHTML = S.employees.map(e=>{
     const on = assigned.includes(e);
-    const takenBy = takenByOtherShift[e];
-    // Disable if taken by another shift (but not if already on THIS shift)
-    const disabled = !on && takenBy;
-    const disabledClass = disabled ? ' disabled-shift' : '';
-    const badge = disabled ? `<span class="shift-label-badge" title="Already assigned to: ${takenBy}">in ${takenBy.length>14?takenBy.slice(0,12)+'…':takenBy}</span>` : '';
-    return `<div class="ecc${on?' on':''}${disabledClass}" onclick="${disabled?'':'toggleEcc(this)'}">
+    const shiftConflict = !on && takenByShift[e];
+    const dayoffConflict = !on && hasDayoff.has(e);
+    const disabled = !!(shiftConflict || dayoffConflict);
+
+    let badge = '';
+    if(shiftConflict) badge = `<span class="shift-label-badge" title="In: ${takenByShift[e]}">in ${takenByShift[e].length>14?takenByShift[e].slice(0,12)+'…':takenByShift[e]}</span>`;
+    else if(dayoffConflict) badge = `<span class="shift-label-badge" style="background:rgba(249,168,212,.12);border-color:rgba(249,168,212,.35);color:#f9a8d4;" title="Has Day Off">Day Off</span>`;
+
+    return `<div class="ecc${on?' on':''}${disabled?' disabled-shift':''}"
+      data-emp="${e.replace(/"/g,'&quot;')}"
+      onclick="${disabled?'':'toggleEcc(this)'}">
       <div class="ck">${on?'✓':''}</div>${e}${badge}
     </div>`;
   }).join('');
@@ -1890,7 +1906,8 @@ function toggleEcc(el){
 async function saveSchedModal(){
   if(!schedCtx||!isAdmin) return;
   const ctx = schedCtx;
-  const selected = [...document.querySelectorAll('#schedEmpGrid .ecc.on')].map(el=>el.textContent.replace('✓','').trim());
+  // Use data-emp attribute for accurate name extraction (avoids badge text contamination)
+  const selected = [...document.querySelectorAll('#schedEmpGrid .ecc.on')].map(el=>el.dataset.emp).filter(Boolean);
   const current  = ctx.type==='shift' ? getNamesForShift(ctx.date,ctx.shiftTypeId) : getNamesForLeave(ctx.date,ctx.leaveType);
   const toAdd    = selected.filter(e=>!current.includes(e));
   const toRemove = current.filter(e=>!selected.includes(e));

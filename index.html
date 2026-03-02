@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TaskFlow — Team Task Manager</title>
+<title>HD Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -453,7 +453,7 @@
   .yl-day.empty{ cursor:default; visibility:hidden; }
   .yl-day.sun{ color:rgba(248,113,113,.8); }
   .yl-day.sat{ color:rgba(96,165,250,.8); }
-  .yl-day.on.sun{ background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.4); color:var(--red); }
+  .yl-day.on.sun{ background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.4); color:#F44336; }
   .yl-day.on.sat{ background:rgba(96,165,250,.15); border-color:rgba(96,165,250,.4); color:#60a5fa; }
   .yl-day.existing{ opacity:.35; cursor:not-allowed; font-style:italic; }
 
@@ -495,9 +495,9 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">TaskFlow</div>
+    <div class="config-logo">Helpdesk Management System</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
-
+<!--
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
     </div>
@@ -507,14 +507,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
-
+-->
     <div class="form-group" style="margin-top:24px;">
-      <label>Supabase Project URL</label>
-      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
+      <label>API URL</label>
+      <input type="text" id="cfgUrl" placeholder="Ask the administrator">
     </div>
     <div class="form-group">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
+      <label>Database Key</label>
+      <input type="text" id="cfgKey" placeholder="Ask the administrator">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -524,7 +524,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">TaskFlow</div>
+    <div class="login-logo">Management System</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>
@@ -543,7 +543,7 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">TaskFlow</div>
+    <div class="topbar-logo">Helpdesk Management Overview</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
         <div class="sync-dot"></div> Live
@@ -557,8 +557,8 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">🕵 Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
   </div>
@@ -567,7 +567,7 @@
   <div id="adminView" class="main" style="display:none;">
     <div class="grid-3">
       <div class="card">
-        <div class="card-title">🔑 Admin Accounts</div>
+        <div class="card-title🔐 Admin Accounts</div>
         <div class="input-row">
           <input type="text" id="adminInput" placeholder="New admin name…" onkeydown="if(event.key==='Enter')addAdmin()">
           <button class="btn btn-primary" onclick="addAdmin()">Add</button>

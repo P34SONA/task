@@ -4,10 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Helpdesk Management System</title>
+<title>TaskFlow — Team Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="icon" href="icon.ico">
 <style>
   :root{
     --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
@@ -320,9 +319,17 @@
   .sched-name-pill.shift-c5{ background:rgba(96,165,250,.12); border-color:rgba(96,165,250,.35); color:#60a5fa; }
   .sched-name-pill.shift-dayoff{ background:rgba(249,168,212,.1); border-color:rgba(249,168,212,.35); color:#f9a8d4; }
   .sched-name-pill.shift-leave{ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.35); color:#c084fc; }
+  .sched-name-pill.shift-sick{ background:rgba(251,146,60,.1); border-color:rgba(251,146,60,.35); color:#fb923c; }
+  .sched-name-pill.shift-halfday{ background:rgba(163,230,53,.1); border-color:rgba(163,230,53,.35); color:#a3e635; }
+  /* leave type badge on chips */
+  .leave-type-tag{ display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:1px 5px; border-radius:4px; margin-left:4px; vertical-align:middle; }
+  .leave-type-tag.pal{ background:rgba(192,132,252,.2); color:#c084fc; }
+  .leave-type-tag.sl{  background:rgba(251,146,60,.2);  color:#fb923c; }
+  .leave-type-tag.hd{  background:rgba(163,230,53,.2);  color:#a3e635; }
   /* Legend */
-  .sched-color-legend{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .sched-color-legend{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; align-items:center; }
   .scl-item{ display:inline-flex; align-items:center; gap:5px; font-size:10px; font-family:'DM Mono',monospace; padding:2px 8px; border-radius:100px; border:1px solid; opacity:.9; }
+  .scl-sep{ display:inline-block; width:1px; height:14px; background:var(--border); margin:0 4px; }
 
   /* schedule table */
   .sched-table{ border-collapse:collapse; width:100%; }
@@ -358,6 +365,10 @@
   .sched-table tr.row-dayoff td{ background:rgba(249,168,212,.04); }
   .sched-table tr.row-leave td.td-label{ color:#c084fc; }
   .sched-table tr.row-leave td{ background:rgba(192,132,252,.04); }
+  .sched-table tr.row-sick td.td-label{ color:#fb923c; }
+  .sched-table tr.row-sick td{ background:rgba(251,146,60,.04); }
+  .sched-table tr.row-halfday td.td-label{ color:#a3e635; }
+  .sched-table tr.row-halfday td{ background:rgba(163,230,53,.04); }
   .sched-table tr.row-header td{ background:rgba(74,222,128,.06); }
   .sched-table tr.row-header td.td-label{ color:var(--green); font-size:10px; letter-spacing:.5px; }
 
@@ -447,16 +458,37 @@
 
   .yl-cal-wrap{ padding:10px; }
   .yl-day-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-  .yl-dow-hdr{ text-align:center; font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; padding:4px 0 6px; letter-spacing:.3px; }
+  .yl-dow-hdr{ text-align:center; font-size:9px; font-weight:700; text-transform:uppercase; padding:4px 0 6px; letter-spacing:.3px; }
+  .yl-dow-hdr.sat{ color:#60a5fa; }
+  .yl-dow-hdr.sun{ color:#f87171; }
+  .yl-dow-hdr:not(.sat):not(.sun){ color:var(--muted); }
   .yl-day{ text-align:center; padding:7px 3px; font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; border:1px solid transparent; border-radius:6px; transition:all .12s; color:#fff; user-select:none; line-height:1; }
   .yl-day:hover:not(.empty):not(.existing){ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.3); }
   .yl-day.on{ background:rgba(192,132,252,.18); border-color:rgba(192,132,252,.5); color:#c084fc; font-weight:700; }
   .yl-day.empty{ cursor:default; visibility:hidden; }
-  .yl-day.sun{ color:rgba(255, 255, 255,.8); }
-  .yl-day.sat{ color:rgba(255, 255, 255,.8); }
-  .yl-day.on.sun{ background:rgba(192,132,252,.15); border-color:rgba(192,132,252,.4); color:#c084fc; }
-  .yl-day.on.sat{ background:rgba(192,132,252,.15); border-color:rgba(192,132,252,.4); color:#c084fc; }
-  .yl-day.existing{ opacity:.35; cursor:not-allowed; font-style:italic; }
+  .yl-day.sun{ color:#f87171; }
+  .yl-day.sat{ color:#60a5fa; }
+  .yl-day.on.sun{ background:rgba(248,113,113,.18); border-color:rgba(248,113,113,.55); color:#f87171; font-weight:700; }
+  .yl-day.on.sat{ background:rgba(96,165,250,.18); border-color:rgba(96,165,250,.55); color:#60a5fa; font-weight:700; }
+  .yl-day.existing{ opacity:.32; cursor:not-allowed; font-style:italic; }
+
+  /* leave quota bar */
+  .yl-quota-bar{ display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap; }
+  .yl-quota{ flex:1; min-width:140px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
+  .yl-quota-label{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:6px; }
+  .yl-quota-nums{ font-size:13px; font-weight:700; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .yl-quota-track{ height:6px; border-radius:3px; background:var(--border); overflow:hidden; }
+  .yl-quota-fill{ height:100%; border-radius:3px; transition:width .3s; }
+  .yl-quota-fill.vl{ background:linear-gradient(90deg,#c084fc,#a855f7); }
+  .yl-quota-fill.sl{ background:linear-gradient(90deg,#fb923c,#ef4444); }
+  .yl-quota-fill.over{ background:#ef4444; }
+
+  /* bulk delete leave modal */
+  .bl-emp-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); gap:12px; }
+  .bl-emp-row:last-child{ border-bottom:none; }
+  .bl-emp-info{ display:flex; align-items:center; gap:10px; }
+  .bl-del-btn{ font-size:11px; padding:4px 12px; border-radius:100px; cursor:pointer; border:1px solid rgba(248,113,113,.3); background:rgba(248,113,113,.08); color:var(--red); font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap; }
+  .bl-del-btn:hover{ background:rgba(248,113,113,.18); border-color:var(--red); }
 
   /* assign modal for schedule */
   .emp-check-grid{ display:flex; flex-wrap:wrap; gap:8px; max-height:300px; overflow-y:auto; padding:4px 0; }
@@ -496,9 +528,9 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">Helpdesk Management System</div>
+    <div class="config-logo">TaskFlow</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
-<!--
+
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
     </div>
@@ -508,14 +540,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
--->
+
     <div class="form-group" style="margin-top:24px;">
-      <label>API URL</label>
-      <input type="text" id="cfgUrl" placeholder="Ask the administrator">
+      <label>Supabase Project URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
     </div>
     <div class="form-group">
-      <label>Database Key</label>
-      <input type="text" id="cfgKey" placeholder="Ask the administrator">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -525,7 +557,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">Management System</div>
+    <div class="login-logo">TaskFlow</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>
@@ -544,7 +576,7 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">Helpdesk Management Overview</div>
+    <div class="topbar-logo">TaskFlow</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
         <div class="sync-dot"></div> Live
@@ -558,8 +590,8 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">🕵 Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
   </div>
@@ -568,7 +600,7 @@
   <div id="adminView" class="main" style="display:none;">
     <div class="grid-3">
       <div class="card">
-        <div class="card-title🔐 Admin Accounts</div>
+        <div class="card-title">🔑 Admin Accounts</div>
         <div class="input-row">
           <input type="text" id="adminInput" placeholder="New admin name…" onkeydown="if(event.key==='Enter')addAdmin()">
           <button class="btn btn-primary" onclick="addAdmin()">Add</button>
@@ -624,7 +656,13 @@
         <div class="section-title">📅 Task Assignments History</div>
         <div class="section-sub">All assignments — filter by date range, task, or employee.</div>
       </div>
-      <span class="count-badge" id="histCount">0 records</span>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="count-badge" id="histCount">0 records</span>
+        <button id="bulkDeleteTasksBtn" class="btn" onclick="openBulkDeleteTasksModal()"
+          style="display:none;padding:7px 14px;font-size:12px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">
+          🗑 Delete Past Tasks
+        </button>
+      </div>
     </div>
     <div class="stats-row" id="histStats"></div>
     <div class="fbar">
@@ -699,6 +737,7 @@
         <button class="btn btn-ghost af" onclick="goToThisLeaveMonth()">This Month</button>
       </div>
       <div id="leaveMonthLabel" style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;"></div>
+      <button id="bulkDeleteLeaveBtn" class="btn" onclick="openBulkDeleteLeaveModal()" style="display:none;padding:9px 18px;font-size:13px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">🗑 Bulk Delete</button>
     </div>
     <div id="leaveViewContent"></div>
   </div>
@@ -712,17 +751,31 @@
     <div class="modal-sub">Set pre-approved leaves for multiple months and specific dates in one go.</div>
 
     <!-- Step 1: Employee + Year -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
       <div class="fg">
         <label style="margin-bottom:6px;display:block;">Employee</label>
-        <select id="ylEmpSel" style="margin-top:4px;" onchange="ylRefreshPreview()">
+        <select id="ylEmpSel" style="margin-top:4px;" onchange="ylOnEmpOrYearChange()">
           <option value="">— Select employee —</option>
         </select>
       </div>
       <div class="fg">
         <label style="margin-bottom:6px;display:block;">Year</label>
-        <select id="ylYearSel" style="margin-top:4px;" onchange="ylBuildMonthGrid()">
+        <select id="ylYearSel" style="margin-top:4px;" onchange="ylOnEmpOrYearChange()">
         </select>
+      </div>
+    </div>
+
+    <!-- Quota bar (shown when employee is selected) -->
+    <div id="ylQuotaBar" class="yl-quota-bar" style="display:none;">
+      <div class="yl-quota">
+        <div class="yl-quota-label">🌴 Pre-Approved Leave</div>
+        <div class="yl-quota-nums" id="ylVlNums">0 / 15</div>
+        <div class="yl-quota-track"><div class="yl-quota-fill vl" id="ylVlFill" style="width:0%"></div></div>
+      </div>
+      <div class="yl-quota">
+        <div class="yl-quota-label">🤒 Sick Leave</div>
+        <div class="yl-quota-nums" id="ylSlNums">0 / 10</div>
+        <div class="yl-quota-track"><div class="yl-quota-fill sl" id="ylSlFill" style="width:0%"></div></div>
       </div>
     </div>
 
@@ -733,7 +786,7 @@
     <!-- Step 3: Date grid per selected month -->
     <div id="ylDateGrids" style="margin-top:16px;"></div>
 
-    <!-- Preview count -->
+    <!-- Preview / quota warning -->
     <div id="ylPreview" style="font-size:12px;color:var(--muted);margin-top:10px;font-family:'DM Mono',monospace;min-height:18px;"></div>
 
     <div style="display:flex;gap:10px;margin-top:18px;">
@@ -743,7 +796,86 @@
   </div>
 </div>
 
-<!-- BULK ASSIGN MODAL -->
+<!-- ── BULK DELETE LEAVE MODAL ── -->
+<div class="modal-overlay" id="bulkDeleteLeaveModal">
+  <div class="modal" style="max-width:540px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-close" onclick="closeBulkDeleteLeaveModal()">✕</div>
+    <div class="modal-title">🗑 Bulk Delete Leaves</div>
+    <div class="modal-sub" id="bdlSub">Select a leave type, employee and scope to delete records.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Leave Type</label>
+        <select id="bdlType" style="margin-top:4px;" onchange="bdlRefresh()">
+          <option value="">— All types —</option>
+          <option value="Pre Approved Leave">🌴 Pre-Approved Leave</option>
+          <option value="Sick Leave">🤒 Sick Leave</option>
+          <option value="Half Day">🌗 Half Day</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Employee</label>
+        <select id="bdlEmpSel" style="margin-top:4px;" onchange="bdlRefresh()">
+          <option value="">— All employees —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Scope</label>
+        <select id="bdlScope" style="margin-top:4px;" onchange="bdlRefresh()">
+          <option value="month">This month only</option>
+          <option value="year">This year</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="bdlSummary" style="font-size:13px;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;"></div>
+
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeBulkDeleteLeaveModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn" onclick="executeBulkDeleteLeave()" style="flex:1;justify-content:center;background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.35);">🗑 Delete Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK DELETE PAST TASKS MODAL ── -->
+<div class="modal-overlay" id="bulkDeleteTasksModal">
+  <div class="modal" style="max-width:520px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-close" onclick="closeBulkDeleteTasksModal()">✕</div>
+    <div class="modal-title">🗑 Delete Past Tasks</div>
+    <div class="modal-sub">Delete task assignment records whose duty date has already passed.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Task</label>
+        <select id="bdtTask" style="margin-top:4px;" onchange="bdtRefresh()">
+          <option value="">— All tasks —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Older than</label>
+        <select id="bdtAge" style="margin-top:4px;" onchange="bdtRefresh()">
+          <option value="0">All past tasks</option>
+          <option value="7">7 days ago</option>
+          <option value="30">30 days ago</option>
+          <option value="90">90 days ago</option>
+          <option value="180">180 days ago</option>
+          <option value="365">1 year ago</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="bdtSummary" style="font-size:13px;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;min-height:36px;"></div>
+
+    <!-- Preview list of matching tasks -->
+    <div id="bdtPreviewList" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;display:none;"></div>
+
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeBulkDeleteTasksModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn" onclick="executeBulkDeleteTasks()" style="flex:1;justify-content:center;background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.35);">🗑 Delete</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="bulkModal">
   <div class="modal" style="max-width:600px; max-height:90vh; overflow-y:auto;">
     <div class="modal-close" onclick="closeBulkModal()">✕</div>
@@ -1196,6 +1328,9 @@ function toggleEcb(el){ if(!el.classList.contains('dis'))el.classList.toggle('se
 
 // ─── HISTORY TABLE ────────────────────────────────────────────────────────
 function renderHistTable(){
+  const bdtBtn = document.getElementById('bulkDeleteTasksBtn');
+  if(bdtBtn) bdtBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
   const tbody=document.getElementById('histTbody');
   let rows=[...S.assignments];
   if(hf.from||hf.to) rows=rows.filter(a=>rangeOverlaps(a.dutyFrom,a.dutyTo,hf.from,hf.to));
@@ -1235,7 +1370,96 @@ function renderHistStats(rows){
     ${top?`<div class="stat-card"><div class="stat-num" style="font-size:20px;padding-top:6px;">${top[0]}</div><div class="stat-lbl">Top Task</div></div>`:''}`;
 }
 
-// ─── EMP CARDS ────────────────────────────────────────────────────────────
+// ─── BULK DELETE PAST TASKS ───────────────────────────────────────────────
+function openBulkDeleteTasksModal(){
+  if(!isAdmin) return;
+  // Populate task dropdown
+  const sel = document.getElementById('bdtTask');
+  sel.innerHTML = '<option value="">— All tasks —</option>' +
+    S.tasks.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('bdtAge').value = '0';
+  bdtRefresh();
+  document.getElementById('bulkDeleteTasksModal').classList.add('open');
+}
+function closeBulkDeleteTasksModal(){
+  document.getElementById('bulkDeleteTasksModal').classList.remove('open');
+}
+document.getElementById('bulkDeleteTasksModal').addEventListener('click', function(e){ if(e.target===this) closeBulkDeleteTasksModal(); });
+
+function bdtGetMatching(){
+  const taskFilter = document.getElementById('bdtTask').value;
+  const age = parseInt(document.getElementById('bdtAge').value) || 0;
+  const cutoff = daysAgo(age); // 0 = today, returns tasks whose dutyTo < today or <= cutoff
+  return S.assignments.filter(a=>{
+    if(!isPast(a)) return false; // only past
+    if(a.dutyTo > cutoff) return false; // not old enough
+    if(taskFilter && a.task !== taskFilter) return false;
+    return true;
+  });
+}
+
+function bdtRefresh(){
+  const matches = bdtGetMatching();
+  const taskFilter = document.getElementById('bdtTask').value;
+  const age = document.getElementById('bdtAge').value;
+  const ageLabel = age==='0'?'all past':age==='365'?'1 year+':age+'+ days old';
+  const sumEl = document.getElementById('bdtSummary');
+  const previewEl = document.getElementById('bdtPreviewList');
+
+  if(!matches.length){
+    sumEl.innerHTML = `<span style="color:var(--muted);">No past tasks found matching the criteria.</span>`;
+    previewEl.style.display = 'none';
+    return;
+  }
+
+  const totalEmps = matches.reduce((s,a)=>s+a.employees.length,0);
+  sumEl.innerHTML =
+    `Found <strong style="color:var(--red)">${matches.length}</strong> past assignment(s) (${ageLabel})` +
+    (taskFilter?` for task <strong style="color:var(--accent)">${taskFilter}</strong>`:'') +
+    ` — <strong style="color:var(--muted)">${totalEmps}</strong> employee-task record(s).` +
+    `<br><span style="font-size:11px;color:var(--red);margin-top:4px;display:block;">⚠ This permanently deletes the assignments and all their employee records.</span>`;
+
+  // Show preview list
+  previewEl.style.display = 'block';
+  previewEl.innerHTML = matches.slice(0,50).map(a=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);gap:12px;">
+      <div>
+        <span style="font-weight:700;font-size:13px;color:var(--text);">${a.task}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px;font-family:'DM Mono',monospace;">${fmtDate(a.dutyFrom)} → ${fmtDate(a.dutyTo)}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px;">
+        ${a.employees.map(e=>`<span class="pill past" style="font-size:10px;padding:2px 7px;">${e}</span>`).join('')}
+      </div>
+    </div>`).join('') +
+    (matches.length>50?`<div style="padding:8px 14px;font-size:11px;color:var(--muted);">…and ${matches.length-50} more</div>`:'');
+}
+
+async function executeBulkDeleteTasks(){
+  if(!isAdmin) return;
+  const matches = bdtGetMatching();
+  if(!matches.length){ showToast('No matching past tasks to delete'); return; }
+
+  showToast('Deleting…');
+  const ids = matches.map(a=>a.id);
+
+  // Delete assignment_employees first (FK constraint), then assignments
+  // Process in batches of 100 to avoid URL length limits
+  for(let i=0;i<ids.length;i+=100){
+    const batch = ids.slice(i,i+100);
+    const {error:e1} = await sb.from('assignment_employees').delete().in('assignment_id', batch);
+    if(e1){ showToast('Error: '+e1.message, true); return; }
+  }
+  for(let i=0;i<ids.length;i+=100){
+    const batch = ids.slice(i,i+100);
+    const {error:e2} = await sb.from('assignments').delete().in('id', batch);
+    if(e2){ showToast('Error: '+e2.message, true); return; }
+  }
+
+  showToast(`✓ Deleted ${ids.length} past assignment(s)`);
+  closeBulkDeleteTasksModal();
+}
+
+
 function renderEmpView(){
   if(curUser) document.getElementById('empGreet').textContent=isGuest?'Welcome, Guest 👋':`Hello, ${curUser}! 👋`;
   const el=document.getElementById('empCards'), t=td();
@@ -1394,8 +1618,9 @@ let _pillId = 0;
 function renderNamePills(names, ctx, colorClass=''){
   if(!names.length) return '<div class="cell-names"></div>';
   const pills = names.map(n=>{
-    // Color class only shown to admins
-    const cc = isAdmin && colorClass ? ` ${colorClass}` : '';
+    // Leave-type colors visible to ALL users; shift colors only to admins
+    const isLeaveColor = colorClass && ['shift-leave','shift-sick','shift-halfday'].includes(colorClass);
+    const cc = (isAdmin || isLeaveColor) && colorClass ? ` ${colorClass}` : '';
     if(isAdmin){
       const pid = '_p'+(++_pillId);
       _pillRegistry[pid] = {name:n, ctx};
@@ -1403,7 +1628,7 @@ function renderNamePills(names, ctx, colorClass=''){
         data-pid="${pid}" title="Remove: ${n.replace(/"/g,'&quot;')}"
         onclick="handlePillRemove(this)">${n}<span class="px">×</span></span>`;
     }
-    return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''}" title="${n}">${n}</span>`;
+    return `<span class="sched-name-pill${(!isGuest&&n===curUser)?' mine':''}${cc}" title="${n}">${n}</span>`;
   }).join('');
   return `<div class="cell-names">${pills}</div>`;
 }
@@ -1485,11 +1710,12 @@ function renderSchedule(){
   const shiftColorMap = {}; // shiftTypeId → colorClass
   S.shiftTypes.forEach((st,i)=>{ shiftColorMap[st.id] = `shift-c${i%6}`; });
 
-  // Build & show admin color legend
+  // Build color legend — leave types visible to ALL, shift colors admin-only
   const legendEl = document.getElementById('schedLegend');
   const legendItems = document.getElementById('schedLegendItems');
   if(legendEl && legendItems){
-    legendEl.style.display = isAdmin ? 'block' : 'none';
+    legendEl.style.display = 'block'; // always visible
+    let html = '';
     if(isAdmin){
       const colors = [
         {cls:'shift-c0',bg:'rgba(79,209,197,.12)',bc:'rgba(79,209,197,.35)',tc:'var(--accent2)'},
@@ -1499,14 +1725,18 @@ function renderSchedule(){
         {cls:'shift-c4',bg:'rgba(248,113,113,.12)',bc:'rgba(248,113,113,.35)',tc:'var(--red)'},
         {cls:'shift-c5',bg:'rgba(96,165,250,.12)',bc:'rgba(96,165,250,.35)',tc:'#60a5fa'},
       ];
-      let html = S.shiftTypes.map((st,i)=>{
+      html += S.shiftTypes.map((st,i)=>{
         const c = colors[i%6];
         return `<span class="scl-item" style="background:${c.bg};border-color:${c.bc};color:${c.tc};">● ${st.name}</span>`;
       }).join('');
       html += `<span class="scl-item" style="background:rgba(249,168,212,.1);border-color:rgba(249,168,212,.35);color:#f9a8d4;">● Dayoff</span>`;
-      html += `<span class="scl-item" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.35);color:#c084fc;">● Pre-Approved Leave</span>`;
-      legendItems.innerHTML = html;
+      html += `<span class="scl-sep"></span>`;
     }
+    // Leave-type legend — visible to ALL users
+    html += `<span class="scl-item" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.35);color:#c084fc;">● Pre-Approved Leave</span>`;
+    html += `<span class="scl-item" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.35);color:#fb923c;">● Sick Leave</span>`;
+    html += `<span class="scl-item" style="background:rgba(163,230,53,.1);border-color:rgba(163,230,53,.35);color:#a3e635;">● Half Day</span>`;
+    legendItems.innerHTML = html;
   }
 
   const allDates = getMonthDates(ym);
@@ -1546,11 +1776,23 @@ function renderSchedule(){
     }
 
     const lvCells = weekDates.map(d=>{
-      const names = getNamesForLeave(d,'Pre Approved Leave');
-      const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
-      return `<td class="${isToday(d)?'today-col':''}">${renderNamePills(names,ctx,'shift-leave')}</td>`;
+      // Merge all 3 leave types into one row, differentiated by pill color
+      const palNames = getNamesForLeave(d,'Pre Approved Leave');
+      const slNames  = getNamesForLeave(d,'Sick Leave');
+      const hdNames  = getNamesForLeave(d,'Half Day');
+
+      const palCtx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
+      const slCtx  = {type:'leave', date:d, shiftTypeId:null, leaveType:'Sick Leave'};
+      const hdCtx  = {type:'leave', date:d, shiftTypeId:null, leaveType:'Half Day'};
+
+      const combined =
+        renderNamePills(palNames, palCtx, 'shift-leave') +
+        renderNamePills(slNames,  slCtx,  'shift-sick')  +
+        renderNamePills(hdNames,  hdCtx,  'shift-halfday');
+
+      return `<td class="${isToday(d)?'today-col':''}">${combined}</td>`;
     }).join('');
-    rows.push(`<tr class="row-leave"><td class="td-label">Pre Approved Leave</td>${lvCells}</tr>`);
+    rows.push(`<tr class="row-leave"><td class="td-label">Pre-Approved Leave</td>${lvCells}</tr>`);
 
     return `<div class="week-block">
       <div class="week-block-label"><span>${weekLabel}</span></div>
@@ -1572,25 +1814,36 @@ function renderLeaveView(){
   const label = document.getElementById('leaveMonthLabel');
   if(label) label.textContent = MONTH_NAMES[m-1]+' '+y;
 
+  // Show/hide bulk delete button for admins
+  const bdlBtn = document.getElementById('bulkDeleteLeaveBtn');
+  if(bdlBtn) bdlBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
   const content = document.getElementById('leaveViewContent');
 
-  // All pre-approved leaves for the selected month (accurate by schedule_date)
+  // All leaves for the selected month (all 3 types)
+  const LEAVE_TYPES = ['Pre Approved Leave','Sick Leave','Half Day'];
+  const LEAVE_META = {
+    'Pre Approved Leave': { label:'PAL',  tag:'pal', icon:'🌴', color:'#c084fc' },
+    'Sick Leave':         { label:'SL',   tag:'sl',  icon:'🤒', color:'#fb923c' },
+    'Half Day':           { label:'HD',   tag:'hd',  icon:'🌗', color:'#a3e635' },
+  };
+
   const monthLeaves = S.leaveEntries.filter(e=>
-    e.leave_type==='Pre Approved Leave' && e.schedule_date.startsWith(ym)
+    LEAVE_TYPES.includes(e.leave_type) && e.schedule_date.startsWith(ym)
   );
 
   // Also get distinct months that have ANY leave so admin can navigate
   const allLeaveMonths = [...new Set(
-    S.leaveEntries.filter(e=>e.leave_type==='Pre Approved Leave').map(e=>e.schedule_date.slice(0,7))
+    S.leaveEntries.filter(e=>LEAVE_TYPES.includes(e.leave_type)).map(e=>e.schedule_date.slice(0,7))
   )].sort();
 
-  // Group by employee → sorted date list
+  // Group by employee → { date → leave_type }
   const byEmp = {};
   monthLeaves.forEach(e=>{
     if(!byEmp[e.employee_name]) byEmp[e.employee_name]=[];
-    byEmp[e.employee_name].push(e.schedule_date);
+    byEmp[e.employee_name].push({date:e.schedule_date, type:e.leave_type});
   });
-  Object.values(byEmp).forEach(arr=>arr.sort());
+  Object.values(byEmp).forEach(arr=>arr.sort((a,b)=>a.date.localeCompare(b.date)));
   const empNames = Object.keys(byEmp).sort();
 
   // Quick-jump pills to months that have leaves
@@ -1611,17 +1864,25 @@ function renderLeaveView(){
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-        <div class="card-title" style="margin:0;">➕ Add Pre-Approved Leave</div>
+        <div class="card-title" style="margin:0;">➕ Add Leave</div>
         <button class="btn btn-ghost" onclick="openYearlyLeaveModal()" style="font-size:12px;padding:7px 14px;border-color:rgba(192,132,252,.4);color:#c084fc;gap:5px;">
           🗓 Yearly Planner
         </button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap;">
         <div class="fg">
           <label>Employee</label>
           <select id="lvEmpSel" style="margin-top:6px;">
             <option value="">— Select —</option>
             ${S.employees.map(e=>`<option value="${e}">${e}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg">
+          <label>Leave Type</label>
+          <select id="lvType" style="margin-top:6px;">
+            <option value="Pre Approved Leave">🌴 Pre-Approved Leave</option>
+            <option value="Sick Leave">🤒 Sick Leave</option>
+            <option value="Half Day">🌗 Half Day</option>
           </select>
         </div>
         <div class="fg"><label>From Date</label><input type="date" id="lvFrom" style="margin-top:6px;"></div>
@@ -1632,47 +1893,61 @@ function renderLeaveView(){
     </div>` : '';
 
   if(!empNames.length){
-    content.innerHTML = adminAdd + monthJumps + `<div class="empty"><div class="ico">🌴</div><h3>No pre-approved leaves for ${MONTH_NAMES[m-1]} ${y}</h3><p>${isAdmin?'Use the form above to add leaves for any date.':'Check another month or contact your admin.'}</p></div>`;
+    content.innerHTML = adminAdd + monthJumps + `<div class="empty"><div class="ico">🌴</div><h3>No leaves for ${MONTH_NAMES[m-1]} ${y}</h3><p>${isAdmin?'Use the form above to add leaves for any date.':'Check another month or contact your admin.'}</p></div>`;
     return;
   }
 
-  // One row per employee: name | date chips inline
+  // One row per employee: name | date chips inline (grouped by leave type)
   const rows = empNames.map(emp=>{
-    const dates = byEmp[emp];
-    const chips = dates.map(d=>{
-      // Parse date parts directly to avoid UTC timezone offset shift
+    const entries = byEmp[emp];
+    const chips = entries.map(({date:d, type:lt})=>{
       const [dy,dm,dd] = d.split('-').map(Number);
       const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       const monNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const dow = new Date(dy, dm-1, dd).getDay();
       const displayDate = `${dayNames[dow]}, ${monNames[dm-1]} ${dd}`;
-      const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:'Pre Approved Leave'};
+      const meta = LEAVE_META[lt] || LEAVE_META['Pre Approved Leave'];
+      const ctx = {type:'leave', date:d, shiftTypeId:null, leaveType:lt};
+      const badge = `<span class="leave-type-tag ${meta.tag}">${meta.label}</span>`;
       if(isAdmin){
         const pid = '_p'+(++_pillId);
         _pillRegistry[pid] = {name:emp, ctx};
-        return `<span class="leave-date-chip removable" data-pid="${pid}" title="Remove ${d}" onclick="handlePillRemove(this)">${displayDate} ×</span>`;
+        return `<span class="leave-date-chip removable" data-pid="${pid}" title="Remove ${d} (${lt})" onclick="handlePillRemove(this)" style="border-color:${meta.color}33;">${meta.icon} ${displayDate}${badge} ×</span>`;
       }
-      return `<span class="leave-date-chip">${displayDate}</span>`;
+      return `<span class="leave-date-chip" style="border-color:${meta.color}33;">${meta.icon} ${displayDate}${badge}</span>`;
     }).join('');
 
+    // Counts per type
+    const pal = entries.filter(e=>e.type==='Pre Approved Leave').length;
+    const sl  = entries.filter(e=>e.type==='Sick Leave').length;
+    const hd  = entries.filter(e=>e.type==='Half Day').length;
+    const summary = [pal?`<span style="color:#c084fc">${pal} PAL</span>`:'', sl?`<span style="color:#fb923c">${sl} SL</span>`:'', hd?`<span style="color:#a3e635">${hd} HD</span>`:''].filter(Boolean).join(' · ');
+
     return `<tr>
-      <td style="white-space:nowrap;min-width:180px;">
+      <td style="white-space:nowrap;min-width:200px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="leave-emp-avatar">${emp.charAt(0).toUpperCase()}</div>
           <div>
             <div style="font-weight:600;font-size:14px;">${emp}</div>
-            <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${dates.length} day${dates.length!==1?'s':''} · ${MONTH_NAMES[m-1]} ${y}</div>
+            <div style="font-size:11px;font-family:'DM Mono',monospace;margin-top:2px;">${summary}</div>
           </div>
         </div>
       </td>
-      <td style="line-height:2;">${chips}</td>
+      <td style="line-height:2.2;">${chips}</td>
     </tr>`;
   }).join('');
 
   const tableHtml = `
     <div style="overflow-x:auto;border-radius:16px;border:1px solid rgba(167,139,250,.25);">
       <table class="leave-list-table">
-        <thead><tr><th style="min-width:180px;">Employee</th><th>Leave Dates — ${MONTH_NAMES[m-1]} ${y}</th></tr></thead>
+        <thead><tr>
+          <th style="min-width:200px;">Employee</th>
+          <th>Leaves — ${MONTH_NAMES[m-1]} ${y} &nbsp;
+            <span class="leave-type-tag pal">PAL</span>
+            <span class="leave-type-tag sl">SL</span>
+            <span class="leave-type-tag hd">HD</span>
+          </th>
+        </tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -1681,70 +1956,91 @@ function renderLeaveView(){
 }
 
 async function addLeaveRange(){
-  const emp  = document.getElementById('lvEmpSel').value;
-  const from = document.getElementById('lvFrom').value;
-  const to   = document.getElementById('lvTo').value;
+  const emp       = document.getElementById('lvEmpSel').value;
+  const leaveTypeSel = document.getElementById('lvType');
+  const leaveType = leaveTypeSel ? leaveTypeSel.value : 'Pre Approved Leave';
+  const from      = document.getElementById('lvFrom').value;
+  const to        = document.getElementById('lvTo').value;
   if(!emp){ showToast('Select an employee'); return; }
   if(!from||!to){ showToast('Select start and end dates'); return; }
   if(to<from){ showToast('End must be on or after start'); return; }
 
-  // Build date strings directly from YYYY-MM-DD input values to avoid UTC timezone shift
   function dateStrings(fromStr, toStr){
     const result = [];
-    // Parse parts directly — do NOT use new Date() then toISOString() (causes UTC offset bug)
     let [y,m,d] = fromStr.split('-').map(Number);
-    const [ey,em,ed] = toStr.split('-').map(Number);
     while(true){
       const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       result.push(ds);
       if(ds===toStr) break;
-      // advance one day
       d++;
-      const maxDay = new Date(y,m,0).getDate(); // last day of month m
+      const maxDay = new Date(y,m,0).getDate();
       if(d>maxDay){ d=1; m++; }
       if(m>12){ m=1; y++; }
-      if(result.length>400) break; // safety
+      if(result.length>400) break;
     }
     return result;
   }
 
   const dates = dateStrings(from, to);
-  const existing = S.leaveEntries.filter(e=>e.leave_type==='Pre Approved Leave'&&e.employee_name===emp).map(e=>e.schedule_date);
+  const existing = S.leaveEntries.filter(e=>e.leave_type===leaveType&&e.employee_name===emp).map(e=>e.schedule_date);
   const toInsert = dates.filter(d=>!existing.includes(d));
   if(!toInsert.length){ showToast('All dates already added'); return; }
-  const {error} = await sb.from('leave_entries').insert(toInsert.map(d=>({schedule_date:d,employee_name:emp,leave_type:'Pre Approved Leave'})));
+
+  // Quota check per year for PAL (15) and SL (10); Half Day has no cap
+  const maxForType = leaveType==='Pre Approved Leave' ? MAX_VL : leaveType==='Sick Leave' ? MAX_SL : null;
+  if(maxForType !== null){
+    const byYear = {};
+    toInsert.forEach(d=>{ const yr=d.slice(0,4); byYear[yr]=(byYear[yr]||0)+1; });
+    for(const [yr, cnt] of Object.entries(byYear)){
+      const usedCount = S.leaveEntries.filter(e=>e.leave_type===leaveType&&e.employee_name===emp&&e.schedule_date.startsWith(yr)).length;
+      if(usedCount + cnt > maxForType){
+        const typeName = leaveType==='Pre Approved Leave'?'pre-approved':'sick';
+        showToast(`⚠ ${emp} reached the maximum ${maxForType} ${typeName} leaves for ${yr}.`, true);
+        return;
+      }
+    }
+  }
+
+  const {error} = await sb.from('leave_entries').insert(toInsert.map(d=>({schedule_date:d,employee_name:emp,leave_type:leaveType})));
   if(error){ showToast('Error: '+error.message,true); return; }
-  // Auto-navigate to the month of the "from" date
-  const targetYm = from.slice(0,7);
   const anchor = document.getElementById('leaveMonthAnchor');
-  if(anchor) anchor.value = targetYm;
-  showToast(`✓ ${toInsert.length} leave day(s) added for ${emp}`);
+  if(anchor) anchor.value = from.slice(0,7);
+  const typeLabel = leaveType==='Pre Approved Leave'?'Pre-Approved Leave':leaveType==='Sick Leave'?'Sick Leave':'Half Day';
+  showToast(`✓ ${toInsert.length} ${typeLabel} day(s) added for ${emp}`);
 }
 
 // ─── YEARLY LEAVE PLANNER ─────────────────────────────────────────────────
 const _YL_MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const _YL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; // Mon-first display
+const _YL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; // Mon-first, Sat=idx5, Sun=idx6
+const MAX_VL = 15;  // max pre-approved leaves per year
+const MAX_SL = 10;  // max sick leave per year (tracked for display only here)
+
+// Return count of Pre Approved Leave for emp in a given year
+function ylCountVL(emp, year){
+  if(!emp) return 0;
+  return S.leaveEntries.filter(e=>
+    e.leave_type==='Pre Approved Leave' &&
+    e.employee_name===emp &&
+    e.schedule_date.startsWith(String(year))
+  ).length;
+}
 
 function openYearlyLeaveModal(){
   if(!isAdmin) return;
 
-  // Populate employee dropdown
   const empSel = document.getElementById('ylEmpSel');
   empSel.innerHTML = '<option value="">— Select employee —</option>' +
     S.employees.map(e=>`<option value="${e}">${e}</option>`).join('');
 
-  // Populate year dropdown — current year ± 2
   const curYear = new Date().getFullYear();
   const yearSel = document.getElementById('ylYearSel');
   yearSel.innerHTML = [curYear-1, curYear, curYear+1, curYear+2]
     .map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
 
-  // Build month pills (all unselected by default)
   ylBuildMonthPills();
-
-  // Clear date grids and preview
   document.getElementById('ylDateGrids').innerHTML = '';
   document.getElementById('ylPreview').textContent = '';
+  document.getElementById('ylQuotaBar').style.display = 'none';
 
   document.getElementById('yearlyLeaveModal').classList.add('open');
 }
@@ -1753,6 +2049,42 @@ function closeYearlyLeaveModal(){
   document.getElementById('yearlyLeaveModal').classList.remove('open');
 }
 document.getElementById('yearlyLeaveModal').addEventListener('click', function(e){ if(e.target===this) closeYearlyLeaveModal(); });
+
+function ylOnEmpOrYearChange(){
+  ylUpdateQuota();
+  ylBuildDateGrids();
+  ylRefreshPreview();
+}
+
+function ylUpdateQuota(){
+  const emp  = document.getElementById('ylEmpSel').value;
+  const year = parseInt(document.getElementById('ylYearSel').value);
+  const bar  = document.getElementById('ylQuotaBar');
+  if(!emp){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+
+  const usedVL  = ylCountVL(emp, year);
+  const newSel  = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')].length;
+  const totalVL = usedVL + newSel;
+
+  const usedSL = S.leaveEntries.filter(e=>
+    e.leave_type==='Sick Leave' && e.employee_name===emp && e.schedule_date.startsWith(String(year))
+  ).length;
+
+  // VL bar
+  const vlPct = Math.min(100, Math.round(totalVL/MAX_VL*100));
+  document.getElementById('ylVlNums').textContent = `${totalVL} / ${MAX_VL}`;
+  const vlFill = document.getElementById('ylVlFill');
+  vlFill.style.width = vlPct+'%';
+  vlFill.className = 'yl-quota-fill vl' + (totalVL>MAX_VL?' over':'');
+
+  // SL bar
+  const slPct = Math.min(100, Math.round(usedSL/MAX_SL*100));
+  document.getElementById('ylSlNums').textContent = `${usedSL} / ${MAX_SL}`;
+  const slFill = document.getElementById('ylSlFill');
+  slFill.style.width = slPct+'%';
+  slFill.className = 'yl-quota-fill sl' + (usedSL>MAX_SL?' over':'');
+}
 
 function ylBuildMonthPills(){
   const el = document.getElementById('ylMonthPills');
@@ -1768,8 +2100,7 @@ function ylToggleMonth(el){
   ylRefreshPreview();
 }
 
-function ylBuildMonthGrid(){ // called when year changes
-  // Re-render grids for currently selected months with new year
+function ylBuildMonthGrid(){
   ylBuildDateGrids();
   ylRefreshPreview();
 }
@@ -1780,7 +2111,6 @@ function ylBuildDateGrids(){
   const selectedMonths = [...document.querySelectorAll('#ylMonthPills .yl-mp.on')]
     .map(el=>parseInt(el.dataset.mi));
 
-  // Existing leave dates for this employee
   const existingDates = new Set(
     S.leaveEntries
       .filter(e=>e.leave_type==='Pre Approved Leave' && (!emp || e.employee_name===emp))
@@ -1793,24 +2123,25 @@ function ylBuildDateGrids(){
   gridsEl.innerHTML = selectedMonths.map(mi=>{
     const monthName = _YL_MON[mi];
     const daysInMonth = new Date(year, mi+1, 0).getDate();
-    // day-of-week of the 1st (JS: 0=Sun…6=Sat), shift to Mon-first (0=Mon…6=Sun)
     const firstDow = new Date(year, mi, 1).getDay();
-    const firstDowMon = (firstDow + 6) % 7; // convert Sun=0 to Mon=0
+    const firstDowMon = (firstDow + 6) % 7; // Mon=0 … Sun=6
 
-    // Build day cells — blank placeholders first
     const blanks = Array(firstDowMon).fill('<div class="yl-day empty"></div>');
     const days = [];
     for(let d=1; d<=daysInMonth; d++){
       const dateStr = `${year}-${String(mi+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dow = new Date(year, mi, d).getDay(); // 0=Sun,6=Sat
+      const dow = new Date(year, mi, d).getDay(); // 0=Sun, 6=Sat
       const isSun = dow===0, isSat = dow===6;
       const isExisting = existingDates.has(dateStr);
       const cls = ['yl-day', isSun?'sun':'', isSat?'sat':'', isExisting?'existing':''].filter(Boolean).join(' ');
-      const title = isExisting ? 'Already on leave' : dateStr;
-      days.push(`<div class="${cls}" data-date="${dateStr}" title="${title}" onclick="ylToggleDay(this)">${d}</div>`);
+      days.push(`<div class="${cls}" data-date="${dateStr}" title="${isExisting?'Already on leave':dateStr}" onclick="ylToggleDay(this)">${d}</div>`);
     }
 
-    const dowHeaders = _YL_DOW.map(d=>`<div class="yl-dow-hdr">${d}</div>`).join('');
+    // DOW headers Mon-first; Sat=index5, Sun=index6
+    const dowHeaders = _YL_DOW.map((d,i)=>{
+      const cls = i===5?'yl-dow-hdr sat':i===6?'yl-dow-hdr sun':'yl-dow-hdr';
+      return `<div class="${cls}">${d}</div>`;
+    }).join('');
 
     return `<div class="yl-month-block" data-mi="${mi}">
       <div class="yl-month-hdr">
@@ -1822,9 +2153,7 @@ function ylBuildDateGrids(){
       </div>
       <div class="yl-cal-wrap">
         <div class="yl-day-grid">
-          ${dowHeaders}
-          ${blanks.join('')}
-          ${days.join('')}
+          ${dowHeaders}${blanks.join('')}${days.join('')}
         </div>
       </div>
     </div>`;
@@ -1833,59 +2162,89 @@ function ylBuildDateGrids(){
 
 function ylToggleDay(el){
   if(el.classList.contains('existing')) return;
+  const emp  = document.getElementById('ylEmpSel').value;
+  const year = parseInt(document.getElementById('ylYearSel').value);
+  const usedVL = ylCountVL(emp, year);
+  const selCount = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')].length;
+
+  if(!el.classList.contains('on') && emp && (usedVL + selCount) >= MAX_VL){
+    showToast(`⚠ ${emp} has reached the maximum ${MAX_VL} pre-approved leaves this year`, true);
+    return;
+  }
   el.classList.toggle('on');
+  ylUpdateQuota();
   ylRefreshPreview();
 }
 
 function ylSelectAll(mi){
-  document.querySelectorAll(`.yl-month-block[data-mi="${mi}"] .yl-day:not(.empty):not(.existing)`)
-    .forEach(el=>el.classList.add('on'));
+  const emp  = document.getElementById('ylEmpSel').value;
+  const year = parseInt(document.getElementById('ylYearSel').value);
+  const usedVL = ylCountVL(emp, year);
+  const days = [...document.querySelectorAll(`.yl-month-block[data-mi="${mi}"] .yl-day:not(.empty):not(.existing):not(.on)`)];
+
+  let selCount = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')].length;
+  for(const d of days){
+    if(emp && (usedVL + selCount) >= MAX_VL) break;
+    d.classList.add('on');
+    selCount++;
+  }
+  ylUpdateQuota();
   ylRefreshPreview();
 }
 
 function ylClearMonth(mi){
   document.querySelectorAll(`.yl-month-block[data-mi="${mi}"] .yl-day.on`)
     .forEach(el=>el.classList.remove('on'));
+  ylUpdateQuota();
   ylRefreshPreview();
 }
 
 function ylRefreshPreview(){
   const selected = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')];
-  const emp = document.getElementById('ylEmpSel').value;
-  const el = document.getElementById('ylPreview');
+  const emp  = document.getElementById('ylEmpSel').value;
+  const year = parseInt(document.getElementById('ylYearSel').value);
+  const el   = document.getElementById('ylPreview');
   if(!el) return;
-  if(!selected.length){ el.textContent = ''; return; }
+  if(!selected.length){ el.textContent=''; el.style.color=''; return; }
 
-  // Group by month for readable summary
+  const usedVL = ylCountVL(emp, year);
+  const totalVL = usedVL + selected.length;
+  const overLimit = emp && totalVL > MAX_VL;
+
   const byMonth = {};
-  selected.forEach(d=>{
-    const date = d.dataset.date;
-    const mo = date.slice(0,7);
-    if(!byMonth[mo]) byMonth[mo]=0;
-    byMonth[mo]++;
-  });
-  const summary = Object.entries(byMonth)
-    .map(([mo,cnt])=>{
-      const [y,m]=mo.split('-').map(Number);
-      return `${_YL_MON[m-1]}: ${cnt}d`;
-    }).join(' · ');
-  const empStr = emp ? ` for ${emp}` : '';
-  el.textContent = `${selected.length} day(s) selected${empStr} — ${summary}`;
+  selected.forEach(d=>{ const mo=d.dataset.date.slice(0,7); byMonth[mo]=(byMonth[mo]||0)+1; });
+  const summary = Object.entries(byMonth).map(([mo,cnt])=>{
+    const [,m]=mo.split('-').map(Number); return `${_YL_MON[m-1]}: ${cnt}d`;
+  }).join(' · ');
+
+  if(overLimit){
+    el.textContent = `⚠ ${emp} reached the maximum ${MAX_VL} pre-approved leaves this year. Reduce selection.`;
+    el.style.color = 'var(--red)';
+  } else {
+    el.textContent = `${selected.length} day(s) selected${emp?' for '+emp:''} — ${summary}`;
+    el.style.color = '';
+  }
 }
 
 async function saveYearlyLeave(){
   if(!isAdmin) return;
-  const emp = document.getElementById('ylEmpSel').value;
+  const emp  = document.getElementById('ylEmpSel').value;
+  const year = parseInt(document.getElementById('ylYearSel').value);
   if(!emp){ showToast('Select an employee'); return; }
 
   const selectedDays = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')]
     .map(el=>el.dataset.date).filter(Boolean);
   if(!selectedDays.length){ showToast('Select at least one day'); return; }
 
+  // Quota check
+  const usedVL = ylCountVL(emp, year);
+  if(usedVL + selectedDays.length > MAX_VL){
+    showToast(`⚠ ${emp} reached the maximum ${MAX_VL} pre-approved leaves this year. Please reduce your selection.`, true);
+    return;
+  }
+
   const existing = new Set(
-    S.leaveEntries
-      .filter(e=>e.leave_type==='Pre Approved Leave' && e.employee_name===emp)
-      .map(e=>e.schedule_date)
+    S.leaveEntries.filter(e=>e.leave_type==='Pre Approved Leave'&&e.employee_name===emp).map(e=>e.schedule_date)
   );
   const toInsert = selectedDays.filter(d=>!existing.has(d))
     .map(d=>({ schedule_date:d, employee_name:emp, leave_type:'Pre Approved Leave' }));
@@ -1897,14 +2256,87 @@ async function saveYearlyLeave(){
     const {error} = await sb.from('leave_entries').insert(toInsert.slice(i,i+500));
     if(error){ showToast('Error: '+error.message, true); return; }
   }
-
-  // Navigate to earliest newly added month
   const earliest = toInsert.map(r=>r.schedule_date).sort()[0].slice(0,7);
   const anchor = document.getElementById('leaveMonthAnchor');
   if(anchor) anchor.value = earliest;
-
   showToast(`✓ Added ${toInsert.length} leave day(s) for ${emp}`);
   closeYearlyLeaveModal();
+}
+
+// ─── BULK DELETE LEAVE MODAL ──────────────────────────────────────────────
+function openBulkDeleteLeaveModal(){
+  if(!isAdmin) return;
+  const empSel = document.getElementById('bdlEmpSel');
+  empSel.innerHTML = '<option value="">— All employees —</option>' +
+    S.employees.map(e=>`<option value="${e}">${e}</option>`).join('');
+  document.getElementById('bdlScope').value = 'month';
+  document.getElementById('bdlType').value  = '';
+  bdlRefresh();
+  document.getElementById('bulkDeleteLeaveModal').classList.add('open');
+}
+
+function closeBulkDeleteLeaveModal(){
+  document.getElementById('bulkDeleteLeaveModal').classList.remove('open');
+}
+document.getElementById('bulkDeleteLeaveModal').addEventListener('click', function(e){ if(e.target===this) closeBulkDeleteLeaveModal(); });
+
+function bdlRefresh(){
+  const leaveType = document.getElementById('bdlType').value;
+  const emp   = document.getElementById('bdlEmpSel').value;
+  const scope = document.getElementById('bdlScope').value;
+  const ym    = document.getElementById('leaveMonthAnchor').value || new Date().toISOString().slice(0,7);
+  const [y]   = ym.split('-').map(Number);
+  const ALL_LEAVE_TYPES = ['Pre Approved Leave','Sick Leave','Half Day'];
+
+  let entries = S.leaveEntries.filter(e=> leaveType ? e.leave_type===leaveType : ALL_LEAVE_TYPES.includes(e.leave_type));
+  if(emp) entries = entries.filter(e=>e.employee_name===emp);
+  if(scope==='month') entries = entries.filter(e=>e.schedule_date.startsWith(ym));
+  else if(scope==='year') entries = entries.filter(e=>e.schedule_date.startsWith(String(y)));
+
+  // Break down counts by type for summary
+  const palCnt = entries.filter(e=>e.leave_type==='Pre Approved Leave').length;
+  const slCnt  = entries.filter(e=>e.leave_type==='Sick Leave').length;
+  const hdCnt  = entries.filter(e=>e.leave_type==='Half Day').length;
+  const breakdown = [
+    palCnt ? `<span style="color:#c084fc">${palCnt} PAL</span>` : '',
+    slCnt  ? `<span style="color:#fb923c">${slCnt} SL</span>`   : '',
+    hdCnt  ? `<span style="color:#a3e635">${hdCnt} HD</span>`   : '',
+  ].filter(Boolean).join(' · ');
+
+  const empStr   = emp || 'all employees';
+  const scopeStr = scope==='month'?`${MONTH_NAMES[parseInt(ym.split('-')[1])-1]} ${y}`:scope==='year'?`year ${y}`:'all time';
+  document.getElementById('bdlSummary').innerHTML =
+    `Found <strong style="color:var(--text)">${entries.length}</strong> record(s) for <strong style="color:var(--accent)">${empStr}</strong> in <strong style="color:var(--text)">${scopeStr}</strong>.` +
+    (breakdown ? `<br><span style="font-size:11px;margin-top:4px;display:block;">${breakdown}</span>` : '') +
+    (entries.length ? `<br><span style="font-size:11px;color:var(--red);margin-top:4px;display:block;">⚠ This action cannot be undone.</span>` : '');
+}
+
+async function executeBulkDeleteLeave(){
+  if(!isAdmin) return;
+  const leaveType = document.getElementById('bdlType').value;
+  const emp   = document.getElementById('bdlEmpSel').value;
+  const scope = document.getElementById('bdlScope').value;
+  const ym    = document.getElementById('leaveMonthAnchor').value || new Date().toISOString().slice(0,7);
+  const [y,m] = ym.split('-').map(Number);
+  const ALL_LEAVE_TYPES = ['Pre Approved Leave','Sick Leave','Half Day'];
+
+  // Delete each matching type (Supabase v2 doesn't support 'in' on delete easily, so loop)
+  const typesToDelete = leaveType ? [leaveType] : ALL_LEAVE_TYPES;
+  showToast('Deleting…');
+  for(const lt of typesToDelete){
+    let q = sb.from('leave_entries').delete().eq('leave_type', lt);
+    if(emp) q = q.eq('employee_name', emp);
+    if(scope==='month'){
+      const lastDay = new Date(y,m,0).getDate();
+      q = q.gte('schedule_date',`${ym}-01`).lte('schedule_date',`${ym}-${String(lastDay).padStart(2,'0')}`);
+    } else if(scope==='year'){
+      q = q.gte('schedule_date',`${y}-01-01`).lte('schedule_date',`${y}-12-31`);
+    }
+    const {error} = await q;
+    if(error){ showToast('Error: '+error.message, true); return; }
+  }
+  showToast('✓ Leave records deleted');
+  closeBulkDeleteLeaveModal();
 }
 
 // ─── BULK ASSIGN MODAL ────────────────────────────────────────────────────
@@ -2044,7 +2476,7 @@ function refreshBulkEmployees(){
       if(!takenLabel && dates.some(d => getNamesForLeave(d,'Dayoff').includes(emp))){
         takenLabel = 'Day Off';
       }
-      if(!takenLabel && dates.some(d => getNamesForLeave(d,'Pre Approved Leave').includes(emp))){
+      if(!takenLabel && dates.some(d => ['Pre Approved Leave','Sick Leave','Half Day'].some(lt=>getNamesForLeave(d,lt).includes(emp)))){
         takenLabel = 'On Leave';
       }
       const alreadyThisShift = !isNaN(shiftId) && dates.some(d => getNamesForShift(d, shiftId).includes(emp));
@@ -2070,7 +2502,7 @@ function refreshBulkEmployees(){
           takenLabel = st.name; break;
         }
       }
-      if(!takenLabel && dates.some(d => getNamesForLeave(d,'Pre Approved Leave').includes(emp))){
+      if(!takenLabel && dates.some(d => ['Pre Approved Leave','Sick Leave','Half Day'].some(lt=>getNamesForLeave(d,lt).includes(emp)))){
         takenLabel = 'On Leave';
       }
       const alreadyDayoff = dates.some(d => getNamesForLeave(d,'Dayoff').includes(emp));
@@ -2226,7 +2658,9 @@ function openSchedModal(ctx){
   }
   const hasPreLeave = new Set();
   if(ctx.type === 'shift'){
-    getNamesForLeave(ctx.date, 'Pre Approved Leave').forEach(emp => hasPreLeave.add(emp));
+    ['Pre Approved Leave','Sick Leave','Half Day'].forEach(lt=>{
+      getNamesForLeave(ctx.date, lt).forEach(emp => hasPreLeave.add(emp));
+    });
   }
 
   document.getElementById('schedEmpGrid').innerHTML = S.employees.map(e=>{

@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HD Management System</title>
+<title>TaskFlow — Team Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -431,6 +431,32 @@
   .leave-date-chip.removable:hover{ background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.4); color:var(--red); }
   .leave-emp-avatar{ width:32px; height:32px; border-radius:50%; background:rgba(167,139,250,.15); border:1px solid rgba(167,139,250,.3); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--purple); flex-shrink:0; }
 
+  /* ── yearly leave planner ── */
+  .yl-month-pills{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+  .yl-mp{ padding:5px 14px; border-radius:100px; font-size:12px; font-weight:500; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:#fff; transition:all .15s; user-select:none; font-family:'DM Sans',sans-serif; }
+  .yl-mp:hover{ border-color:rgba(192,132,252,.5); }
+  .yl-mp.on{ background:rgba(192,132,252,.12); border-color:rgba(192,132,252,.5); color:#c084fc; font-weight:700; }
+
+  .yl-month-block{ margin-bottom:18px; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .yl-month-hdr{ background:var(--surface2); padding:8px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+  .yl-month-hdr-name{ font-size:13px; font-weight:700; color:#c084fc; letter-spacing:.3px; }
+  .yl-month-hdr-actions{ display:flex; gap:6px; }
+  .yl-hdr-btn{ font-size:10px; padding:3px 9px; border-radius:100px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--muted); transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .yl-hdr-btn:hover{ border-color:rgba(192,132,252,.4); color:#c084fc; }
+
+  .yl-cal-wrap{ padding:10px; }
+  .yl-day-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .yl-dow-hdr{ text-align:center; font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; padding:4px 0 6px; letter-spacing:.3px; }
+  .yl-day{ text-align:center; padding:7px 3px; font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; border:1px solid transparent; border-radius:6px; transition:all .12s; color:#fff; user-select:none; line-height:1; }
+  .yl-day:hover:not(.empty):not(.existing){ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.3); }
+  .yl-day.on{ background:rgba(192,132,252,.18); border-color:rgba(192,132,252,.5); color:#c084fc; font-weight:700; }
+  .yl-day.empty{ cursor:default; visibility:hidden; }
+  .yl-day.sun{ color:rgba(248,113,113,.8); }
+  .yl-day.sat{ color:rgba(96,165,250,.8); }
+  .yl-day.on.sun{ background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.4); color:var(--red); }
+  .yl-day.on.sat{ background:rgba(96,165,250,.15); border-color:rgba(96,165,250,.4); color:#60a5fa; }
+  .yl-day.existing{ opacity:.35; cursor:not-allowed; font-style:italic; }
+
   /* assign modal for schedule */
   .emp-check-grid{ display:flex; flex-wrap:wrap; gap:8px; max-height:300px; overflow-y:auto; padding:4px 0; }
   .ecc{ display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:7px 12px; cursor:pointer; transition:all .15s; user-select:none; font-size:13px; }
@@ -469,8 +495,7 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">Management System</div>
-  <!--
+    <div class="config-logo">TaskFlow</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
 
     <div class="config-step">
@@ -482,14 +507,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
--->
+
     <div class="form-group" style="margin-top:24px;">
-      <label>Database Project URL</label>
-      <input type="text" id="cfgUrl" placeholder="Ask the administrator">
+      <label>Supabase Project URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
     </div>
     <div class="form-group">
-      <label>Database Key</label>
-      <input type="text" id="cfgKey" placeholder="Ask the administrator">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -499,7 +524,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">Management System</div>
+    <div class="login-logo">TaskFlow</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>
@@ -518,7 +543,7 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">Tasks Management System</div>
+    <div class="topbar-logo">TaskFlow</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
         <div class="sync-dot"></div> Live
@@ -532,8 +557,8 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">🕵 Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
   </div>
@@ -678,6 +703,45 @@
   </div>
 </div><!-- /app -->
 
+<!-- ── YEARLY LEAVE PLANNER MODAL ── -->
+<div class="modal-overlay" id="yearlyLeaveModal">
+  <div class="modal" style="max-width:700px;max-height:92vh;overflow-y:auto;">
+    <div class="modal-close" onclick="closeYearlyLeaveModal()">✕</div>
+    <div class="modal-title">🗓 Yearly Leave Planner</div>
+    <div class="modal-sub">Set pre-approved leaves for multiple months and specific dates in one go.</div>
+
+    <!-- Step 1: Employee + Year -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Employee</label>
+        <select id="ylEmpSel" style="margin-top:4px;" onchange="ylRefreshPreview()">
+          <option value="">— Select employee —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Year</label>
+        <select id="ylYearSel" style="margin-top:4px;" onchange="ylBuildMonthGrid()">
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 2: Month pills -->
+    <label style="margin-bottom:8px;display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Select Months</label>
+    <div class="yl-month-pills" id="ylMonthPills"></div>
+
+    <!-- Step 3: Date grid per selected month -->
+    <div id="ylDateGrids" style="margin-top:16px;"></div>
+
+    <!-- Preview count -->
+    <div id="ylPreview" style="font-size:12px;color:var(--muted);margin-top:10px;font-family:'DM Mono',monospace;min-height:18px;"></div>
+
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn btn-secondary" onclick="closeYearlyLeaveModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary"   onclick="saveYearlyLeave()"        style="flex:1;justify-content:center;">Save All Leaves</button>
+    </div>
+  </div>
+</div>
+
 <!-- BULK ASSIGN MODAL -->
 <div class="modal-overlay" id="bulkModal">
   <div class="modal" style="max-width:600px; max-height:90vh; overflow-y:auto;">
@@ -793,7 +857,7 @@ async function initSupabase(url, key){
     document.getElementById('configScreen').style.display='none';
     await fetchAll();
     subscribeRealtime();
-    
+
     // Restore session if available — skip login screen
     const sess = loadSession();
     if(sess && sess.curUser){
@@ -1545,7 +1609,12 @@ function renderLeaveView(){
   // Admin add-leave form — no min date restriction so future months work freely
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
-      <div class="card-title">➕ Add Pre-Approved Leave</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div class="card-title" style="margin:0;">➕ Add Pre-Approved Leave</div>
+        <button class="btn btn-ghost" onclick="openYearlyLeaveModal()" style="font-size:12px;padding:7px 14px;border-color:rgba(192,132,252,.4);color:#c084fc;gap:5px;">
+          🗓 Yearly Planner
+        </button>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap;">
         <div class="fg">
           <label>Employee</label>
@@ -1558,7 +1627,7 @@ function renderLeaveView(){
         <div class="fg"><label>To Date</label><input type="date" id="lvTo" style="margin-top:6px;"></div>
         <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Leave</button>
       </div>
-      <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Tip: You can add leaves for any month — past, current, or future. The view will auto-navigate to the correct month after saving.</p>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Use <strong>Yearly Planner</strong> to set leaves across multiple months and specific days in one go.</p>
     </div>` : '';
 
   if(!empNames.length){
@@ -1649,6 +1718,192 @@ async function addLeaveRange(){
   const anchor = document.getElementById('leaveMonthAnchor');
   if(anchor) anchor.value = targetYm;
   showToast(`✓ ${toInsert.length} leave day(s) added for ${emp}`);
+}
+
+// ─── YEARLY LEAVE PLANNER ─────────────────────────────────────────────────
+const _YL_MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const _YL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; // Mon-first display
+
+function openYearlyLeaveModal(){
+  if(!isAdmin) return;
+
+  // Populate employee dropdown
+  const empSel = document.getElementById('ylEmpSel');
+  empSel.innerHTML = '<option value="">— Select employee —</option>' +
+    S.employees.map(e=>`<option value="${e}">${e}</option>`).join('');
+
+  // Populate year dropdown — current year ± 2
+  const curYear = new Date().getFullYear();
+  const yearSel = document.getElementById('ylYearSel');
+  yearSel.innerHTML = [curYear-1, curYear, curYear+1, curYear+2]
+    .map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
+
+  // Build month pills (all unselected by default)
+  ylBuildMonthPills();
+
+  // Clear date grids and preview
+  document.getElementById('ylDateGrids').innerHTML = '';
+  document.getElementById('ylPreview').textContent = '';
+
+  document.getElementById('yearlyLeaveModal').classList.add('open');
+}
+
+function closeYearlyLeaveModal(){
+  document.getElementById('yearlyLeaveModal').classList.remove('open');
+}
+document.getElementById('yearlyLeaveModal').addEventListener('click', function(e){ if(e.target===this) closeYearlyLeaveModal(); });
+
+function ylBuildMonthPills(){
+  const el = document.getElementById('ylMonthPills');
+  if(!el) return;
+  el.innerHTML = _YL_MON.map((name,i)=>
+    `<div class="yl-mp" data-mi="${i}" onclick="ylToggleMonth(this)">${name}</div>`
+  ).join('');
+}
+
+function ylToggleMonth(el){
+  el.classList.toggle('on');
+  ylBuildDateGrids();
+  ylRefreshPreview();
+}
+
+function ylBuildMonthGrid(){ // called when year changes
+  // Re-render grids for currently selected months with new year
+  ylBuildDateGrids();
+  ylRefreshPreview();
+}
+
+function ylBuildDateGrids(){
+  const year = parseInt(document.getElementById('ylYearSel').value);
+  const emp  = document.getElementById('ylEmpSel').value;
+  const selectedMonths = [...document.querySelectorAll('#ylMonthPills .yl-mp.on')]
+    .map(el=>parseInt(el.dataset.mi));
+
+  // Existing leave dates for this employee
+  const existingDates = new Set(
+    S.leaveEntries
+      .filter(e=>e.leave_type==='Pre Approved Leave' && (!emp || e.employee_name===emp))
+      .map(e=>e.schedule_date)
+  );
+
+  const gridsEl = document.getElementById('ylDateGrids');
+  if(!selectedMonths.length){ gridsEl.innerHTML=''; return; }
+
+  gridsEl.innerHTML = selectedMonths.map(mi=>{
+    const monthName = _YL_MON[mi];
+    const daysInMonth = new Date(year, mi+1, 0).getDate();
+    // day-of-week of the 1st (JS: 0=Sun…6=Sat), shift to Mon-first (0=Mon…6=Sun)
+    const firstDow = new Date(year, mi, 1).getDay();
+    const firstDowMon = (firstDow + 6) % 7; // convert Sun=0 to Mon=0
+
+    // Build day cells — blank placeholders first
+    const blanks = Array(firstDowMon).fill('<div class="yl-day empty"></div>');
+    const days = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = `${year}-${String(mi+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dow = new Date(year, mi, d).getDay(); // 0=Sun,6=Sat
+      const isSun = dow===0, isSat = dow===6;
+      const isExisting = existingDates.has(dateStr);
+      const cls = ['yl-day', isSun?'sun':'', isSat?'sat':'', isExisting?'existing':''].filter(Boolean).join(' ');
+      const title = isExisting ? 'Already on leave' : dateStr;
+      days.push(`<div class="${cls}" data-date="${dateStr}" title="${title}" onclick="ylToggleDay(this)">${d}</div>`);
+    }
+
+    const dowHeaders = _YL_DOW.map(d=>`<div class="yl-dow-hdr">${d}</div>`).join('');
+
+    return `<div class="yl-month-block" data-mi="${mi}">
+      <div class="yl-month-hdr">
+        <span class="yl-month-hdr-name">${monthName} ${year}</span>
+        <div class="yl-month-hdr-actions">
+          <button class="yl-hdr-btn" onclick="ylSelectAll(${mi})">Select All</button>
+          <button class="yl-hdr-btn" onclick="ylClearMonth(${mi})">Clear</button>
+        </div>
+      </div>
+      <div class="yl-cal-wrap">
+        <div class="yl-day-grid">
+          ${dowHeaders}
+          ${blanks.join('')}
+          ${days.join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function ylToggleDay(el){
+  if(el.classList.contains('existing')) return;
+  el.classList.toggle('on');
+  ylRefreshPreview();
+}
+
+function ylSelectAll(mi){
+  document.querySelectorAll(`.yl-month-block[data-mi="${mi}"] .yl-day:not(.empty):not(.existing)`)
+    .forEach(el=>el.classList.add('on'));
+  ylRefreshPreview();
+}
+
+function ylClearMonth(mi){
+  document.querySelectorAll(`.yl-month-block[data-mi="${mi}"] .yl-day.on`)
+    .forEach(el=>el.classList.remove('on'));
+  ylRefreshPreview();
+}
+
+function ylRefreshPreview(){
+  const selected = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')];
+  const emp = document.getElementById('ylEmpSel').value;
+  const el = document.getElementById('ylPreview');
+  if(!el) return;
+  if(!selected.length){ el.textContent = ''; return; }
+
+  // Group by month for readable summary
+  const byMonth = {};
+  selected.forEach(d=>{
+    const date = d.dataset.date;
+    const mo = date.slice(0,7);
+    if(!byMonth[mo]) byMonth[mo]=0;
+    byMonth[mo]++;
+  });
+  const summary = Object.entries(byMonth)
+    .map(([mo,cnt])=>{
+      const [y,m]=mo.split('-').map(Number);
+      return `${_YL_MON[m-1]}: ${cnt}d`;
+    }).join(' · ');
+  const empStr = emp ? ` for ${emp}` : '';
+  el.textContent = `${selected.length} day(s) selected${empStr} — ${summary}`;
+}
+
+async function saveYearlyLeave(){
+  if(!isAdmin) return;
+  const emp = document.getElementById('ylEmpSel').value;
+  if(!emp){ showToast('Select an employee'); return; }
+
+  const selectedDays = [...document.querySelectorAll('#ylDateGrids .yl-day.on:not(.existing)')]
+    .map(el=>el.dataset.date).filter(Boolean);
+  if(!selectedDays.length){ showToast('Select at least one day'); return; }
+
+  const existing = new Set(
+    S.leaveEntries
+      .filter(e=>e.leave_type==='Pre Approved Leave' && e.employee_name===emp)
+      .map(e=>e.schedule_date)
+  );
+  const toInsert = selectedDays.filter(d=>!existing.has(d))
+    .map(d=>({ schedule_date:d, employee_name:emp, leave_type:'Pre Approved Leave' }));
+
+  if(!toInsert.length){ showToast('All selected dates already exist'); return; }
+
+  showToast('Saving…');
+  for(let i=0;i<toInsert.length;i+=500){
+    const {error} = await sb.from('leave_entries').insert(toInsert.slice(i,i+500));
+    if(error){ showToast('Error: '+error.message, true); return; }
+  }
+
+  // Navigate to earliest newly added month
+  const earliest = toInsert.map(r=>r.schedule_date).sort()[0].slice(0,7);
+  const anchor = document.getElementById('leaveMonthAnchor');
+  if(anchor) anchor.value = earliest;
+
+  showToast(`✓ Added ${toInsert.length} leave day(s) for ${emp}`);
+  closeYearlyLeaveModal();
 }
 
 // ─── BULK ASSIGN MODAL ────────────────────────────────────────────────────

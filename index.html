@@ -531,7 +531,7 @@
   <div class="config-box">
     <div class="config-logo">Helpdesk Management</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
-
+<!--
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
     </div>
@@ -541,14 +541,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
-
+-->
     <div class="form-group" style="margin-top:24px;">
-      <label>Supabase Project URL</label>
-      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
+      <label>API URL</label>
+      <input type="text" id="cfgUrl" placeholder="Ask the administrator">
     </div>
     <div class="form-group">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
+      <label>Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="Ask the administrator">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -558,7 +558,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">Helpdesk Management System</div>
+    <div class="login-logo">Helpdesk Management</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>

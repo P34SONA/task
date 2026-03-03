@@ -7,7 +7,6 @@
 <title>Helpdesk Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="icon" href="verified.png">
 <style>
   :root{
     --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
@@ -160,7 +159,7 @@
   .card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
   .card-title{ font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:20px; }
   .tag-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; min-height:28px; }
-  .tag{ background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:5px 12px 5px 14px; font-size:12px; font-family:'DM Mono',monospace; display:flex; align-items:center; gap:8px; }
+  .tag{ background:rgba(192,132,252,.1); border:1px solid rgba(192,132,252,.3); border-radius:100px; padding:5px 12px 5px 14px; font-size:12px; font-family:'DM Mono',monospace; display:flex; align-items:center; gap:8px; color:#c084fc; }
   .tag .del{ cursor:pointer; color:var(--muted); font-size:15px; line-height:1; transition:color .15s; }
   .tag .del:hover{ color:var(--red); }
   .input-row{ display:flex; gap:8px; }
@@ -210,11 +209,11 @@
   tr:last-child td{ border-bottom:none; }
   tr:hover td{ background:rgba(255,255,255,.02); }
   .pills{ display:flex; flex-wrap:wrap; gap:6px; }
-  .pill{ background:rgba(79,209,197,.1); border:1px solid rgba(79,209,197,.3); border-radius:100px; padding:3px 10px; font-size:12px; color:var(--accent2); font-family:'DM Mono',monospace; }
+  .pill{ background:rgba(192,132,252,.1); border:1px solid rgba(192,132,252,.3); border-radius:100px; padding:3px 10px; font-size:12px; color:#c084fc; font-family:'DM Mono',monospace; }
   .pill.past{ background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:var(--purple); }
   .db{ font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); }
   .badge-past  { background:rgba(167,139,250,.1); border:1px solid rgba(167,139,250,.3); color:var(--purple); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
-  .badge-today { background:rgba(74,222,128,.1);  border:1px solid rgba(74,222,128,.3);  color:var(--green); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
+  .badge-today { background:rgba(192,132,252,.1); border:1px solid rgba(192,132,252,.3); color:#c084fc;      font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
   .badge-future{ background:rgba(79,209,197,.1);  border:1px solid rgba(79,209,197,.3);  color:var(--accent2); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
 
   /* stats */
@@ -248,7 +247,7 @@
   .aname{ background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:5px 12px; font-size:13px; display:flex; align-items:center; gap:6px; }
   .aname.me{ background:rgba(232,197,71,.1); border-color:rgba(232,197,71,.4); color:var(--accent); font-weight:600; }
   .me-dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; }
-  .tbadge{ font-size:11px; font-weight:600; font-family:'DM Mono',monospace; padding:4px 10px; border-radius:100px; background:rgba(232,197,71,.1); border:1px solid rgba(232,197,71,.3); color:var(--accent); white-space:nowrap; }
+  .tbadge{ font-size:11px; font-weight:600; font-family:'DM Mono',monospace; padding:4px 10px; border-radius:100px; background:rgba(192,132,252,.1); border:1px solid rgba(192,132,252,.3); color:#c084fc; white-space:nowrap; }
   .tbadge.past{ background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:var(--purple); }
   .empty{ text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
   .empty .ico{ font-size:48px; margin-bottom:16px; }
@@ -467,9 +466,9 @@
   .yl-day:hover:not(.empty):not(.existing){ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.3); }
   .yl-day.on{ background:rgba(192,132,252,.18); border-color:rgba(192,132,252,.5); color:#c084fc; font-weight:700; }
   .yl-day.empty{ cursor:default; visibility:hidden; }
-  .yl-day.sun{ color:#ffffff; }
+  .yl-day.sun{ color:#f87171; }
   .yl-day.sat{ color:#fff; }
-  .yl-day.on.sun{ background:rgba(248,113,113,.18); border-color:rgba(248,113,113,.55); color:#c084fc; font-weight:700; }
+  .yl-day.on.sun{ background:rgba(248,113,113,.18); border-color:rgba(248,113,113,.55); color:#f87171; font-weight:700; }
   .yl-day.on.sat{ background:rgba(192,132,252,.18); border-color:rgba(192,132,252,.5); color:#c084fc; font-weight:700; }
   .yl-day.existing{ opacity:.32; cursor:not-allowed; font-style:italic; }
 
@@ -551,7 +550,7 @@
 <div id="configScreen" style="display:none;">
   <div class="config-box">
     <div class="config-logo">Helpdesk Management System</div>
-    <div class="config-sub">Connect to the project to get started. This only needs to be done once.</div>
+    <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
 <!--
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
@@ -564,7 +563,7 @@
     </div>
 -->
     <div class="form-group" style="margin-top:24px;">
-      <label>Supabase URL</label>
+      <label>API URL</label>
       <input type="text" id="cfgUrl" placeholder="Ask the administrator">
     </div>
     <div class="form-group">
@@ -598,10 +597,10 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">TaskFlow</div>
+    <div class="topbar-logo">Overview</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
-        <div class="sync-dot"></div> Live
+  <!--      <div class="sync-dot"></div> Live -->
       </div>
       <div class="user-badge">
         <div class="user-dot"></div>
@@ -612,8 +611,8 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">👨🏻‍💻 Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
     <button class="tab" id="tabSkills" onclick="switchTab('skills')">🧠 Soft Skills</button>
@@ -770,14 +769,14 @@
     <div class="sched-nav">
       <h2>🧠 Soft Skills</h2>
       <div class="sk-half-tabs">
-        <button class="sk-htab active" id="skH1" onclick="switchSkillHalf(1)">Q1 Jan–Jun</button>
-        <button class="sk-htab" id="skH2" onclick="switchSkillHalf(2)">Q2 Jul–Dec</button>
+        <button class="sk-htab active" id="skH1" onclick="switchSkillHalf(1)">H1 — Jan–Jun</button>
+        <button class="sk-htab" id="skH2" onclick="switchSkillHalf(2)">H2 — Jul–Dec</button>
       </div>
       <div style="font-size:12px;color:var(--muted);" id="skYearLabel"></div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn btn-ghost" onclick="skShiftYear(-1)">←</button>
+        <button class="btn btn-ghost" onclick="skShiftYear(-1)">← Prev Year</button>
         <select id="skYearSel" onchange="renderSkillsView()" style="font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);"></select>
-        <button class="btn btn-ghost" onclick="skShiftYear(1)">→</button>
+        <button class="btn btn-ghost" onclick="skShiftYear(1)">Next Year →</button>
       </div>
     </div>
     <div id="skillsViewContent" style="padding:0 0 32px;"></div>
@@ -1137,12 +1136,24 @@ function monthStart(){ const d=new Date(); d.setDate(1); return d.toISOString().
 function monthEnd() { const d=new Date(new Date().getFullYear(),new Date().getMonth()+1,0); return d.toISOString().slice(0,10); }
 function fmtDate(s){ if(!s)return'—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 function rangeOverlaps(aF,aT,fF,fT){ if(fF&&aT<fF)return false; if(fT&&aF>fT)return false; return true; }
-function isPast(a){ return a.dutyTo<td(); }
+
+// Local today string (YYYY-MM-DD) — uses device local time so midnight flip is accurate
+function localToday(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+// Task is past when its dutyTo is strictly before today (local midnight boundary)
+function isPast(a){ return a.dutyTo < localToday(); }
+
 function rangeBadge(a){
-  const t=td();
-  if(a.dutyTo<t)   return '<span class="badge-past">Past</span>';
-  if(a.dutyFrom>t) return '<span class="badge-future">Upcoming</span>';
-  return                  '<span class="badge-today">Active</span>';
+  const t = localToday();
+  if(a.dutyTo < t)   return '<span class="badge-past">Past</span>';
+  if(a.dutyFrom > t) return '<span class="badge-future">Upcoming</span>';
+  return                    '<span class="badge-today">Active</span>';
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────
@@ -1389,13 +1400,13 @@ function renderSkillsView(){
         </div>
         <div class="sk-rows">
           <div class="sk-row">
-            <div class="sk-row-lbl">Training 1</div>
+            <div class="sk-row-lbl">Row 1</div>
             <textarea class="sk-textarea" id="${r1id}" placeholder="${isAdmin?'Type or paste notes…':'—'}"
               ${isAdmin?`oninput="skDebounceSave(${year},${mi},1,this.value)"`:'readonly'}
               rows="3">${r1val}</textarea>
           </div>
           <div class="sk-row">
-            <div class="sk-row-lbl">Training 2</div>
+            <div class="sk-row-lbl">Row 2</div>
             <textarea class="sk-textarea" id="${r2id}" placeholder="${isAdmin?'Type or paste notes…':'—'}"
               ${isAdmin?`oninput="skDebounceSave(${year},${mi},2,this.value)"`:'readonly'}
               rows="3">${r2val}</textarea>
@@ -1464,7 +1475,7 @@ function renderTaskList(){
   const el=document.getElementById('taskList');
   if(!S.tasks.length){el.innerHTML='<span style="color:var(--muted);font-size:13px;">No tasks yet.</span>';return;}
   el.innerHTML=S.tasks.map(t=>`
-    <span class="tag" style="background:rgba(232,197,71,.08);border-color:rgba(232,197,71,.25);">${t}</span>`).join('');
+    <span class="tag">${t}</span>`).join('');
 }
 function renderAssignDropdown(){
   const s=document.getElementById('assignTask'),c=s.value;
@@ -1632,7 +1643,7 @@ async function executeBulkDeleteTasks(){
 
 function renderEmpView(){
   if(curUser) document.getElementById('empGreet').textContent=isGuest?'Welcome, Guest 👋':`Hello, ${curUser}! 👋`;
-  const el=document.getElementById('empCards'), t=td();
+  const el=document.getElementById('empCards'), t=localToday();
   let rows;
   if(sub==='current'){
     rows=S.assignments.filter(a=>a.dutyTo>=t);
@@ -2034,7 +2045,7 @@ function renderLeaveView(){
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-        <div class="card-title" style="margin:0;">Overview</div>
+        <div class="card-title" style="margin:0;">➕ Add Leave</div>
         <button class="btn btn-ghost" onclick="openYearlyLeaveModal()" style="font-size:12px;padding:7px 14px;border-color:rgba(192,132,252,.4);color:#c084fc;gap:5px;">
           🗓 Yearly Planner
         </button>
@@ -2057,7 +2068,7 @@ function renderLeaveView(){
         </div>
         <div class="fg"><label>From Date</label><input type="date" id="lvFrom" style="margin-top:6px;"></div>
         <div class="fg"><label>To Date</label><input type="date" id="lvTo" style="margin-top:6px;"></div>
-        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Record</button>
+        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Leave</button>
       </div>
       <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Use <strong>Yearly Planner</strong> to set leaves across multiple months and specific days in one go.</p>
     </div>` : '';
@@ -2905,7 +2916,7 @@ function showToast(msg,err=false){
 }
 
 // ─── MIDNIGHT DATE RESET ─────────────────────────────────────────────────
-// At 00:00 every day, reset the duty date pickers to today's date
+// At 00:00 every day: reset duty date pickers AND refresh all task badges
 function scheduleMidnightReset(){
   const now = new Date();
   const msUntilMidnight =
@@ -2917,7 +2928,9 @@ function scheduleMidnightReset(){
     if(df) df.value = today;
     if(dt) dt.value = today;
     renderEmpCbs();
-    scheduleMidnightReset(); // reschedule for the next midnight
+    // Re-render everything so Past/Active badges update at midnight
+    renderAll();
+    scheduleMidnightReset(); // reschedule for next midnight
   }, msUntilMidnight);
 }
 scheduleMidnightReset();

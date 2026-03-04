@@ -742,7 +742,7 @@
         <button class="btn btn-ghost af" onclick="goToThisMonth()">This Month</button>
       </div>
       <div id="monthLabel" style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;"></div>
-      <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">👥👥 Bulk Assign</button>
+      <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">👥 Bulk Assign</button>
       <button id="deleteMonthBtn" class="btn" onclick="confirmDeleteMonth()" style="display:none;padding:9px 18px;font-size:13px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">🗑 Delete Month</button>
     </div>
     <!-- Admin-only color legend -->
@@ -2061,7 +2061,7 @@ function renderLeaveView(){
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-        <div class="card-title" style="margin:0;">➕ Add Leave</div>
+        <div class="card-title" style="margin:0;">Overview</div>
         <button class="btn btn-ghost" onclick="openYearlyLeaveModal()" style="font-size:12px;padding:7px 14px;border-color:rgba(192,132,252,.4);color:#c084fc;gap:5px;">
           🗓 Yearly Planner
         </button>
@@ -2084,7 +2084,7 @@ function renderLeaveView(){
         </div>
         <div class="fg"><label>From Date</label><input type="date" id="lvFrom" style="margin-top:6px;"></div>
         <div class="fg"><label>To Date</label><input type="date" id="lvTo" style="margin-top:6px;"></div>
-        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Leave</button>
+        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Record</button>
       </div>
       <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Use <strong>Yearly Planner</strong> to set leaves across multiple months and specific days in one go.</p>
     </div>` : '';

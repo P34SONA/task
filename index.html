@@ -4,9 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TaskFlow — Team Task Manager</title>
+<title>Helpdesk</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="verified.png">
 <style>
   :root{
     --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
@@ -552,7 +553,7 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">TaskFlow</div>
+    <div class="config-logo">Helpdesk Management System</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
 
     <div class="config-step">
@@ -581,7 +582,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">TaskFlow</div>
+    <div class="login-logo">Management System</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>
@@ -600,7 +601,7 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">TaskFlow</div>
+    <div class="topbar-logo">System Overview</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
         <div class="sync-dot"></div> Live
@@ -615,7 +616,7 @@
   </div>
   <div class="tabs">
     <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Team View</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
     <button class="tab" id="tabSkills" onclick="switchTab('skills')">🧠 Soft Skills</button>

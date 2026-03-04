@@ -604,7 +604,7 @@
     <div class="topbar-logo">System Overview</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
-        <div class="sync-dot"></div> Live
+  <!--      <div class="sync-dot"></div> Live -->
       </div>
       <div class="user-badge">
         <div class="user-dot"></div>
@@ -615,8 +615,8 @@
     </div>
   </div>
   <div class="tabs">
-    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">⚙ Admin</button>
-    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">👥 Tasks</button>
+    <button class="tab" id="tabAdmin" onclick="switchTab('admin')">👨🏻‍💻 Admin</button>
+    <button class="tab active" id="tabEmp" onclick="switchTab('employee')">📋 Tasks</button>
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
     <button class="tab" id="tabSkills" onclick="switchTab('skills')">🧠 Soft Skills</button>
@@ -626,7 +626,7 @@
   <div id="adminView" class="main" style="display:none;">
     <div class="grid-3">
       <div class="card">
-        <div class="card-title">🔑 Admin Accounts</div>
+        <div class="card-title">🔐 Admin Accounts</div>
         <div class="input-row">
           <input type="text" id="adminInput" placeholder="New admin name…" onkeydown="if(event.key==='Enter')addAdmin()">
           <button class="btn btn-primary" onclick="addAdmin()">Add</button>
@@ -742,7 +742,7 @@
         <button class="btn btn-ghost af" onclick="goToThisMonth()">This Month</button>
       </div>
       <div id="monthLabel" style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;"></div>
-      <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">⚡ Bulk Assign</button>
+      <button id="bulkBtn" class="btn btn-primary" onclick="openBulkModal()" style="display:none;padding:9px 18px;font-size:13px;">👥👥 Bulk Assign</button>
       <button id="deleteMonthBtn" class="btn" onclick="confirmDeleteMonth()" style="display:none;padding:9px 18px;font-size:13px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">🗑 Delete Month</button>
     </div>
     <!-- Admin-only color legend -->
@@ -773,14 +773,14 @@
     <div class="sched-nav">
       <h2>🧠 Soft Skills</h2>
       <div class="sk-half-tabs">
-        <button class="sk-htab active" id="skH1" onclick="switchSkillHalf(1)">H1 — Jan–Jun</button>
-        <button class="sk-htab" id="skH2" onclick="switchSkillHalf(2)">H2 — Jul–Dec</button>
+        <button class="sk-htab active" id="skH1" onclick="switchSkillHalf(1)">Q1 — Jan–Jun</button>
+        <button class="sk-htab" id="skH2" onclick="switchSkillHalf(2)">Q2 — Jul–Dec</button>
       </div>
       <div style="font-size:12px;color:var(--muted);" id="skYearLabel"></div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn btn-ghost" onclick="skShiftYear(-1)">← Prev Year</button>
+        <button class="btn btn-ghost" onclick="skShiftYear(-1)">← </button>
         <select id="skYearSel" onchange="renderSkillsView()" style="font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);"></select>
-        <button class="btn btn-ghost" onclick="skShiftYear(1)">Next Year →</button>
+        <button class="btn btn-ghost" onclick="skShiftYear(1)">→ </button>
       </div>
     </div>
     <div id="skillsViewContent" style="padding:0 0 32px;"></div>
@@ -923,13 +923,13 @@
 <div class="modal-overlay" id="bulkModal">
   <div class="modal" style="max-width:600px; max-height:90vh; overflow-y:auto;">
     <div class="modal-close" onclick="closeBulkModal()">✕</div>
-    <div class="modal-title">⚡ Bulk Assign</div>
+    <div class="modal-title">👥 Bulk Assign</div>
     <div class="modal-sub" id="bulkModalSub">Assign employees to a shift or mark day-off in bulk.</div>
 
     <!-- Mode toggle -->
     <div class="bulk-mode-tabs" style="margin-bottom:18px;">
       <div class="bulk-mode-tab active" id="bulkModeShift"   onclick="setBulkMode('shift')">🕐 Shift</div>
-      <div class="bulk-mode-tab"        id="bulkModePaypro"  onclick="setBulkMode('paypro')">⚡ PayPro &amp; Batch Upload</div>
+      <div class="bulk-mode-tab"        id="bulkModePaypro"  onclick="setBulkMode('paypro')">⏳ PayPro &amp; Batch Upload</div>
       <div class="bulk-mode-tab"        id="bulkModeDayoff"  onclick="setBulkMode('dayoff')">🌙 Day Off</div>
     </div>
 
@@ -1412,17 +1412,17 @@ function renderSkillsView(){
       return `<div class="sk-card">
         <div class="sk-card-hdr">
           <span class="sk-card-month">${name} ${year}</span>
-          <span class="sk-card-badge">${_skHalf===1?'H1':'H2'}</span>
+          <span class="sk-card-badge">${_skHalf===1?'QUARTER 1':'QUARTER 2'}</span>
         </div>
         <div class="sk-rows">
           <div class="sk-row">
-            <div class="sk-row-lbl">Row 1</div>
+            <div class="sk-row-lbl">TRAINING 1</div>
             <textarea class="sk-textarea" id="${r1id}" placeholder="${isAdmin?'Type or paste notes…':'—'}"
               ${isAdmin?`oninput="skDebounceSave(${year},${mi},1,this.value)"`:'readonly'}
               rows="3">${r1val}</textarea>
           </div>
           <div class="sk-row">
-            <div class="sk-row-lbl">Row 2</div>
+            <div class="sk-row-lbl">TRAINING 2</div>
             <textarea class="sk-textarea" id="${r2id}" placeholder="${isAdmin?'Type or paste notes…':'—'}"
               ${isAdmin?`oninput="skDebounceSave(${year},${mi},2,this.value)"`:'readonly'}
               rows="3">${r2val}</textarea>

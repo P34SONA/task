@@ -4,9 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Helpdesk Management System</title>
+<title>TaskFlow — Team Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="verified.png">
 <style>
   :root{
     --bg:#0d0f14; --surface:#161820; --surface2:#1e2028; --border:#2a2d3a;
@@ -520,6 +521,9 @@
     opacity:.38; cursor:not-allowed; pointer-events:none;
     background:rgba(248,113,113,.05); border-color:rgba(248,113,113,.2);
   }
+  .ecc.pp-maxed{
+    opacity:.3; cursor:not-allowed; pointer-events:none;
+  }
   .ecc.disabled-shift .ck{ background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); }
   .shift-label-badge{ font-size:9px; font-family:'DM Mono',monospace; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.25); color:var(--red); border-radius:100px; padding:1px 5px; margin-left:2px; white-space:nowrap; }
   .ecc .ck{ width:14px; height:14px; border-radius:3px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; }
@@ -549,9 +553,9 @@
 <!-- ── CONFIG SCREEN ── -->
 <div id="configScreen" style="display:none;">
   <div class="config-box">
-    <div class="config-logo">Helpdesk Management System</div>
+    <div class="config-logo">TaskFlow</div>
     <div class="config-sub">Connect your Supabase project to get started. This only needs to be done once.</div>
-<!--
+
     <div class="config-step">
       <strong>Step 1</strong> — Go to your <strong>Supabase Dashboard</strong> → <strong>SQL Editor</strong> and run the <code>schema.sql</code> file provided.
     </div>
@@ -561,14 +565,14 @@
     <div class="config-step">
       <strong>Step 3</strong> — Paste them below and click Connect.
     </div>
--->
+
     <div class="form-group" style="margin-top:24px;">
-      <label>API URL</label>
-      <input type="text" id="cfgUrl" placeholder="Ask the administrator">
+      <label>Supabase Project URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
     </div>
     <div class="form-group">
       <label>Supabase Anon Key</label>
-      <input type="text" id="cfgKey" placeholder="Ask the administrator">
+      <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs…">
       <div class="error-msg" id="cfgError">Could not connect. Check your URL and key.</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="saveConfig()">Connect to Supabase</button>
@@ -578,7 +582,7 @@
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">Management System</div>
+    <div class="login-logo">TaskFlow</div>
     <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Your Name</label>
@@ -597,10 +601,10 @@
 <!-- ── APP ── -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">Overview</div>
+    <div class="topbar-logo">TaskFlow</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
-  <!--      <div class="sync-dot"></div> Live -->
+        <div class="sync-dot"></div> Live
       </div>
       <div class="user-badge">
         <div class="user-dot"></div>
@@ -924,8 +928,9 @@
 
     <!-- Mode toggle -->
     <div class="bulk-mode-tabs" style="margin-bottom:18px;">
-      <div class="bulk-mode-tab active" id="bulkModeShift"  onclick="setBulkMode('shift')">🕐 Shift</div>
-      <div class="bulk-mode-tab"        id="bulkModeDayoff" onclick="setBulkMode('dayoff')">🌙 Day Off</div>
+      <div class="bulk-mode-tab active" id="bulkModeShift"   onclick="setBulkMode('shift')">🕐 Shift</div>
+      <div class="bulk-mode-tab"        id="bulkModePaypro"  onclick="setBulkMode('paypro')">⚡ PayPro &amp; Batch Upload</div>
+      <div class="bulk-mode-tab"        id="bulkModeDayoff"  onclick="setBulkMode('dayoff')">🌙 Day Off</div>
     </div>
 
     <!-- ── SHIFT MODE ── -->
@@ -942,6 +947,14 @@
       <div class="bulk-day-checks" id="bulkDayChecks"></div>
     </div>
 
+    <!-- ── PAYPRO MODE ── -->
+    <div id="bulkPayproSection" style="display:none;">
+      <label style="margin-bottom:8px;display:block;">Period <span style="font-size:10px;color:var(--muted);font-weight:400;">(tap to select multiple)</span></label>
+      <div class="bulk-week-tabs" id="bulkPayproWeekTabs"></div>
+      <label style="margin-bottom:8px;display:block;">Days in Week <span style="font-size:10px;color:var(--muted);font-weight:400;">(uncheck to exclude)</span></label>
+      <div class="bulk-day-checks" id="bulkPayproDayChecks"></div>
+    </div>
+
     <!-- ── DAYOFF MODE ── -->
     <div id="bulkDayoffSection" style="display:none;">
       <label style="margin-bottom:8px;display:block;">Select Days of Week <span style="font-size:10px;color:var(--muted);font-weight:400;">(applies to whole month)</span></label>
@@ -950,7 +963,10 @@
     </div>
 
     <!-- Employee grid (shared) -->
-    <label style="margin-bottom:8px;display:block;margin-top:14px;">Select Employees</label>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;margin-bottom:8px;">
+      <label style="margin:0;">Select Employees</label>
+      <span id="bulkEmpCounter" style="display:none;font-size:11px;font-family:'DM Mono',monospace;background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.3);color:#c084fc;padding:2px 10px;border-radius:100px;"></span>
+    </div>
     <div class="emp-check-grid" id="bulkEmpGrid"></div>
 
     <div style="display:flex;gap:10px;margin-top:18px;">
@@ -2525,6 +2541,9 @@ let _bulkMode = 'shift';
 let _bulkWeeks = [];
 let _bulkSelectedWeeks = new Set(); // multi-week support
 let _bulkMonthDates = [];
+// PayPro period state (mirrors shift logic)
+let _ppWeeks = [];
+let _ppSelectedWeeks = new Set();
 
 const DOW_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DOW_FULL_ISO = [1,2,3,4,5,6,0]; // JS .getDay() values for Mon-Sun display order
@@ -2532,13 +2551,28 @@ const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 function setBulkMode(mode){
   _bulkMode = mode;
-  document.getElementById('bulkModeShift').classList.toggle('active',  mode==='shift');
-  document.getElementById('bulkModeDayoff').classList.toggle('active', mode==='dayoff');
-  document.getElementById('bulkShiftSection').style.display  = mode==='shift'  ? 'block' : 'none';
-  document.getElementById('bulkDayoffSection').style.display = mode==='dayoff' ? 'block' : 'none';
-  document.getElementById('bulkModalSub').textContent = mode==='shift'
-    ? 'Assign employees to a shift — select a period and specific days.'
-    : 'Mark employees as Day Off — select days of the week (applies to whole month).';
+  document.getElementById('bulkModeShift').classList.toggle('active',   mode==='shift');
+  document.getElementById('bulkModePaypro').classList.toggle('active',  mode==='paypro');
+  document.getElementById('bulkModeDayoff').classList.toggle('active',  mode==='dayoff');
+  document.getElementById('bulkShiftSection').style.display   = mode==='shift'   ? 'block' : 'none';
+  document.getElementById('bulkPayproSection').style.display  = mode==='paypro'  ? 'block' : 'none';
+  document.getElementById('bulkDayoffSection').style.display  = mode==='dayoff'  ? 'block' : 'none';
+
+  const counterEl = document.getElementById('bulkEmpCounter');
+  if(mode==='paypro'){
+    counterEl.style.display = 'inline';
+    counterEl.textContent = '0 / 2 selected';
+    document.getElementById('bulkModalSub').textContent = 'Assign up to 2 employees to PayPro & Batch Upload — select a period and specific days.';
+  } else {
+    counterEl.style.display = 'none';
+    document.getElementById('bulkModalSub').textContent = mode==='shift'
+      ? 'Assign employees to a shift — select a period and specific days.'
+      : 'Mark employees as Day Off — select days of the week (applies to whole month).';
+  }
+
+  if(mode==='paypro'){
+    buildPayproDayChecks();
+  }
   if(mode==='dayoff') updateDowPreview();
   refreshBulkEmployees();
 }
@@ -2597,7 +2631,79 @@ function getSelectedShiftDates(){
     .map(el=>el.title).filter(Boolean);
 }
 
-function buildDowPills(){
+// ── PayPro period/day helpers ──────────────────────────────────────────────
+function togglePayproWeek(idx){
+  if(_ppSelectedWeeks.has(idx)){
+    if(_ppSelectedWeeks.size === 1) return;
+    _ppSelectedWeeks.delete(idx);
+  } else {
+    _ppSelectedWeeks.add(idx);
+  }
+  document.querySelectorAll('.ppwt').forEach((el,i)=>el.classList.toggle('active', _ppSelectedWeeks.has(i)));
+  buildPayproDayChecks();
+  refreshBulkEmployees();
+}
+
+function togglePpdc(el){
+  el.classList.toggle('on');
+  refreshBulkEmployees();
+}
+
+function buildPayproDayChecks(){
+  // Build period tabs if not yet rendered
+  const tabsEl = document.getElementById('bulkPayproWeekTabs');
+  if(tabsEl && !tabsEl.children.length){
+    const ym = getSelectedYearMonth();
+    const [y,m] = ym.split('-').map(Number);
+    const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][m-1];
+    const lastDay = new Date(y,m,0).getDate();
+    _ppWeeks = [
+      _bulkMonthDates.filter(d=>{ const day=parseInt(d.slice(8)); return day>=1&&day<=15; }),
+      _bulkMonthDates.filter(d=>{ const day=parseInt(d.slice(8)); return day>=16; })
+    ];
+    _ppSelectedWeeks = new Set([0]);
+    tabsEl.innerHTML = [
+      { label: `1st – 15th`, sub: `${monthName} 1–15` },
+      { label: `16th – ${lastDay}th`, sub: `${monthName} 16–${lastDay}` }
+    ].map((p,i)=>`
+      <div class="bwt ppwt${i===0?' active':''}" onclick="togglePayproWeek(${i})">
+        ${p.label} <span style="font-size:10px;opacity:.7;">${p.sub}</span>
+      </div>`).join('');
+  }
+
+  // Collect all dates from selected PayPro periods — ALL deselected by default
+  const allSelected = [];
+  const seen = new Set();
+  _ppWeeks.forEach((wk, i)=>{
+    if(!_ppSelectedWeeks.has(i)) return;
+    wk.forEach(d=>{ if(!seen.has(d)){ seen.add(d); allSelected.push(d); } });
+  });
+  allSelected.sort();
+
+  const el = document.getElementById('bulkPayproDayChecks');
+  if(!el) return;
+  // All deselected by default (no 'on' class)
+  el.innerHTML = allSelected.map(d=>{
+    const dow = new Date(d+'T00:00:00').getDay();
+    const dayLabel = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dow];
+    const cls = dow===0?'sun':dow===6?'sat':'';
+    return `<label class="bdc ${cls}" title="${d}">
+      <input type="checkbox" style="display:none;" onchange="togglePpdc(this.parentElement)">
+      ${dayLabel} ${new Date(d+'T00:00:00').getDate()}
+    </label>`;
+  }).join('');
+}
+
+function getSelectedPayproDates(){
+  return [...document.querySelectorAll('#bulkPayproDayChecks .bdc.on')]
+    .map(el=>el.title).filter(Boolean);
+}
+
+function getActiveDates(){
+  if(_bulkMode==='shift')  return getSelectedShiftDates();
+  if(_bulkMode==='paypro') return getSelectedPayproDates();
+  return getSelectedDowDates();
+}
   const el = document.getElementById('bulkDowPills');
   if(!el) return;
   // Display Mon-Sun order; default ALL deselected
@@ -2638,14 +2744,27 @@ function refreshBulkEmployees(){
   if(!grid) return;
   const dates = getActiveDates();
 
-  if(_bulkMode === 'shift'){
-    const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
-    const shiftObj = S.shiftTypes.find(s=>s.id===shiftId);
-    const isPayPro = shiftObj && shiftObj.name === 'PayPro & Batch Upload';
+  if(_bulkMode === 'shift' || _bulkMode === 'paypro'){
+    let shiftId, shiftObj, isPayPro;
+    if(_bulkMode === 'paypro'){
+      // Find PayPro shift type
+      shiftObj = S.shiftTypes.find(s=>s.name==='PayPro & Batch Upload');
+      shiftId = shiftObj ? shiftObj.id : null;
+      isPayPro = true;
+    } else {
+      shiftId = parseInt(document.getElementById('bulkShiftSel').value);
+      shiftObj = S.shiftTypes.find(s=>s.id===shiftId);
+      isPayPro = shiftObj && shiftObj.name === 'PayPro & Batch Upload';
+    }
+
+    // Count currently selected in paypro mode
+    const selCount = _bulkMode==='paypro'
+      ? [...grid.querySelectorAll('.ecc.on')].length : 0;
+    const counterEl = document.getElementById('bulkEmpCounter');
+    if(_bulkMode==='paypro' && counterEl) counterEl.textContent = `${selCount} / 2 selected`;
 
     grid.innerHTML = S.employees.map(emp=>{
       let takenLabel = null;
-      // Skip other-shift conflicts for PayPro (can overlap), but still check dayoff + pre-approved leave
       if(!isPayPro){
         for(const st of S.shiftTypes){
           if(st.id === shiftId) continue;
@@ -2660,22 +2779,28 @@ function refreshBulkEmployees(){
       if(!takenLabel && dates.some(d => ['Pre Approved Leave','Sick Leave','Half Day'].some(lt=>getNamesForLeave(d,lt).includes(emp)))){
         takenLabel = 'On Leave';
       }
-      const alreadyThisShift = !isNaN(shiftId) && dates.some(d => getNamesForShift(d, shiftId).includes(emp));
-      const disabled = !!takenLabel;
+      const alreadyThisShift = shiftId && dates.some(d => getNamesForShift(d, shiftId).includes(emp));
+      const conflictDisabled = !!takenLabel;
+      // For paypro: also disable employees if 2 already selected and this one is not selected
+      const alreadyOn = alreadyThisShift && !conflictDisabled;
+
       let badgeStyle = '';
       if(takenLabel==='Day Off') badgeStyle = 'background:rgba(249,168,212,.12);border-color:rgba(249,168,212,.35);color:#f9a8d4;';
       else if(takenLabel==='On Leave') badgeStyle = 'background:rgba(192,132,252,.12);border-color:rgba(192,132,252,.35);color:#c084fc;';
-      const badge = disabled
+      const badge = conflictDisabled
         ? `<span class="shift-label-badge" style="${badgeStyle}">${takenLabel.length>14?takenLabel.slice(0,12)+'…':takenLabel}</span>` : '';
-      return `<div class="ecc${alreadyThisShift&&!disabled?' on':''}${disabled?' disabled-shift':''}"
+      return `<div class="ecc${alreadyOn?' on':''}${conflictDisabled?' disabled-shift':''}"
         data-emp="${emp.replace(/"/g,'&quot;')}"
-        onclick="${disabled?'':'toggleEcc(this)'}">
-        <div class="ck">${alreadyThisShift&&!disabled?'✓':''}</div>${emp}${badge}
+        onclick="${conflictDisabled?'':'toggleEcc(this)'}">
+        <div class="ck">${alreadyOn?'✓':''}</div>${emp}${badge}
       </div>`;
     }).join('');
 
+    // After rendering, re-apply paypro max-2 disabling
+    if(_bulkMode==='paypro') applyPayproMaxLimit();
+
   } else {
-    // Dayoff mode — disable employees in any shift OR pre-approved leave on those dates
+    // Dayoff mode
     grid.innerHTML = S.employees.map(emp=>{
       let takenLabel = null;
       for(const st of S.shiftTypes){
@@ -2699,6 +2824,31 @@ function refreshBulkEmployees(){
         <div class="ck">${on?'✓':''}</div>${emp}${badge}
       </div>`;
     }).join('');
+  }
+}
+
+function applyPayproMaxLimit(){
+  const grid = document.getElementById('bulkEmpGrid');
+  if(!grid) return;
+  const all = [...grid.querySelectorAll('.ecc:not(.disabled-shift)')];
+  const selected = all.filter(el=>el.classList.contains('on'));
+  const counterEl = document.getElementById('bulkEmpCounter');
+  if(counterEl) counterEl.textContent = `${selected.length} / 2 selected`;
+  if(selected.length >= 2){
+    // Disable unselected tiles
+    all.forEach(el=>{
+      if(!el.classList.contains('on')){
+        el.classList.add('pp-maxed');
+        el.setAttribute('onclick','');
+      }
+    });
+  } else {
+    // Re-enable all non-conflict tiles
+    all.forEach(el=>{
+      el.classList.remove('pp-maxed');
+      const emp = el.dataset.emp;
+      if(emp) el.setAttribute('onclick','toggleEcc(this)');
+    });
   }
 }
 
@@ -2735,6 +2885,14 @@ function openBulkModal(){
   buildDowPills();
   updateDowPreview();
 
+  // Reset PayPro section — tabs rebuild lazily on setBulkMode('paypro')
+  _ppWeeks = [
+    _bulkMonthDates.filter(d=>{ const day=parseInt(d.slice(8)); return day>=1&&day<=15; }),
+    _bulkMonthDates.filter(d=>{ const day=parseInt(d.slice(8)); return day>=16; })
+  ];
+  _ppSelectedWeeks = new Set([0]);
+  document.getElementById('bulkPayproWeekTabs').innerHTML = ''; // cleared, rebuilt on first switch
+
   // Shift dropdown — exclude PayPro & Batch Upload
   const sel = document.getElementById('bulkShiftSel');
   sel.innerHTML = '<option value="">— Choose shift —</option>' +
@@ -2746,10 +2904,13 @@ function openBulkModal(){
   // Reset to shift mode
   _bulkMode = 'shift';
   document.getElementById('bulkModeShift').classList.add('active');
+  document.getElementById('bulkModePaypro').classList.remove('active');
   document.getElementById('bulkModeDayoff').classList.remove('active');
-  document.getElementById('bulkShiftSection').style.display  = 'block';
-  document.getElementById('bulkDayoffSection').style.display = 'none';
+  document.getElementById('bulkShiftSection').style.display   = 'block';
+  document.getElementById('bulkPayproSection').style.display  = 'none';
+  document.getElementById('bulkDayoffSection').style.display  = 'none';
   document.getElementById('bulkModalSub').textContent = 'Assign employees to a shift — select a period and specific days.';
+  document.getElementById('bulkEmpCounter').style.display = 'none';
 
   refreshBulkEmployees();
   document.getElementById('bulkModal').classList.add('open');
@@ -2761,12 +2922,31 @@ document.getElementById('bulkModal').addEventListener('click',function(e){ if(e.
 async function saveBulkAssign(){
   if(!isAdmin) return;
   const dates = getActiveDates();
-  if(!dates.length){ showToast(_bulkMode==='shift'?'Select at least one day':'Select at least one day of week'); return; }
+  if(!dates.length){ showToast('Select at least one day'); return; }
 
   const selEmps = [...document.querySelectorAll('#bulkEmpGrid .ecc.on')].map(el=>el.dataset.emp).filter(Boolean);
   if(!selEmps.length){ showToast('Select at least one employee'); return; }
 
-  if(_bulkMode === 'shift'){
+  if(_bulkMode === 'paypro'){
+    if(selEmps.length > 2){ showToast('PayPro & Batch Upload allows a maximum of 2 employees'); return; }
+    const ppShift = S.shiftTypes.find(s=>s.name==='PayPro & Batch Upload');
+    if(!ppShift){ showToast('PayPro & Batch Upload shift type not found'); return; }
+    const rows = [];
+    for(const d of dates){
+      const existing = getNamesForShift(d, ppShift.id);
+      for(const emp of selEmps){
+        if(!existing.includes(emp)) rows.push({schedule_date:d, shift_type_id:ppShift.id, employee_name:emp});
+      }
+    }
+    if(!rows.length){ showToast('All entries already exist'); return; }
+    showToast('Saving…');
+    for(let i=0;i<rows.length;i+=500){
+      const {error} = await sb.from('schedule_entries').insert(rows.slice(i,i+500));
+      if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
+    }
+    showToast(`✓ Assigned ${rows.length} PayPro slot(s)`);
+
+  } else if(_bulkMode === 'shift'){
     const shiftId = parseInt(document.getElementById('bulkShiftSel').value);
     if(!shiftId){ showToast('Choose a shift type'); return; }
     const rows = [];
@@ -2783,7 +2963,9 @@ async function saveBulkAssign(){
       if(error){ showToast('Error: '+error.message,true); closeBulkModal(); return; }
     }
     showToast(`✓ Assigned ${rows.length} slot(s) to ${S.shiftTypes.find(s=>s.id===shiftId)?.name||'Shift'}`);
+
   } else {
+    // Dayoff mode
     const rows = [];
     for(const d of dates){
       const existing = getNamesForLeave(d,'Dayoff');
@@ -2871,6 +3053,7 @@ document.getElementById('schedModal').addEventListener('click',function(e){ if(e
 function toggleEcc(el){
   el.classList.toggle('on');
   el.querySelector('.ck').textContent = el.classList.contains('on') ? '✓' : '';
+  if(_bulkMode==='paypro') applyPayproMaxLimit();
 }
 
 async function saveSchedModal(){

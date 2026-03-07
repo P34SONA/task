@@ -318,7 +318,7 @@
   .sched-name-pill.shift-c5{ background:rgba(96,165,250,.12); border-color:rgba(96,165,250,.35); color:#60a5fa; }
   .sched-name-pill.shift-dayoff{ background:rgba(249,168,212,.1); border-color:rgba(249,168,212,.35); color:#f9a8d4; }
   .sched-name-pill.shift-leave{ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.35); color:#c084fc; }
-  .sched-name-pill.shift-sick{ background:rgba(251,146,60,.1); border-color:rgba(251,146,60,.35); color:#fb923c; }
+  .sched-name-pill.shift-sick{ background:rgba(184, 48, 24,.1); border-color:rgba(237, 21, 29,.35); color:#ffffff; }
   .sched-name-pill.shift-halfday{ background:rgba(163,230,53,.1); border-color:rgba(163,230,53,.35); color:#a3e635; }
   /* leave type badge on chips */
   .leave-type-tag{ display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:1px 5px; border-radius:4px; margin-left:4px; vertical-align:middle; }
@@ -1959,7 +1959,7 @@ function renderSchedule(){
     }
     // Leave-type legend — visible to ALL users
     html += `<span class="scl-item" style="background:rgba(32, 135, 140,.1);border-color:rgba(10, 197, 207,.35);color:#05e2ed;">● Pre-Approved Leave</span>`;
-    html += `<span class="scl-item" style="background:rgba(184, 48, 24,.1);border-color:rgba(237, 21, 29,.35);color:#e62c17;">● Sick Leave</span>`;
+    html += `<span class="scl-item" style="background:rgba(184, 48, 24,.1);border-color:rgba(237, 21, 29,.35);color:#ffffff;">● Sick Leave</span>`;
     html += `<span class="scl-item" style="background:rgba(163,230,53,.1);border-color:rgba(163,230,53,.35);color:#a3e635;">● Half Day</span>`;
     legendItems.innerHTML = html;
   }

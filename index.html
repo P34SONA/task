@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -318,7 +319,7 @@
   .sched-name-pill.shift-c5{ background:rgba(96,165,250,.12); border-color:rgba(96,165,250,.35); color:#60a5fa; }
   .sched-name-pill.shift-dayoff{ background:rgba(249,168,212,.1); border-color:rgba(249,168,212,.35); color:#f9a8d4; }
   .sched-name-pill.shift-leave{ background:rgba(192,132,252,.1); border-color:rgba(192,132,252,.35); color:#c084fc; }
-  .sched-name-pill.shift-sick{ background:rgba(184, 48, 24,.1); border-color:rgba(237, 21, 29,.35); color:#ffffff; }
+  .sched-name-pill.shift-sick{ background:rgba(251,146,60,.1); border-color:rgba(251,146,60,.35); color:#fb923c; }
   .sched-name-pill.shift-halfday{ background:rgba(163,230,53,.1); border-color:rgba(163,230,53,.35); color:#a3e635; }
   /* leave type badge on chips */
   .leave-type-tag{ display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:1px 5px; border-radius:4px; margin-left:4px; vertical-align:middle; }
@@ -413,8 +414,8 @@
     box-sizing:border-box;
   }
   .sched-name-pill.mine{
-    background:rgba(64, 145, 49,.12); border-color:rgba(60, 227, 30,.35);
-    color:#ffffff;
+    background:rgba(232,197,71,.12); border-color:rgba(232,197,71,.35);
+    color:var(--accent);
   }
   .sched-name-pill.editable{ cursor:pointer; }
   .sched-name-pill.editable:hover{
@@ -519,10 +520,10 @@
     display:inline-flex; align-items:center; gap:10px;
     padding:12px 22px; border-radius:var(--radius);
     background:rgba(232,197,71,.1); border:1px solid rgba(232,197,71,.35);
-    color:#ffffff; font-size:14px; font-weight:600;
+    color:var(--accent); font-size:14px; font-weight:600;
     text-decoration:none; cursor:pointer; transition:all .2s;
   }
-  .sk-cert-drive-btn:hover{ background:rgba(232,197,71,.18); border-color:#ffffff; transform:translateY(-1px); box-shadow:0 4px 16px rgba(232,197,71,.15); }
+  .sk-cert-drive-btn:hover{ background:rgba(232,197,71,.18); border-color:var(--accent); transform:translateY(-1px); box-shadow:0 4px 16px rgba(232,197,71,.15); }
   .sk-cert-drive-btn .drive-icon{ font-size:20px; }
 
   /* assign modal for schedule */
@@ -596,7 +597,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">Login your account</div>
-    <div class="login-sub">To view or manage tasks</div>
+    <div class="login-sub">Sign in to view or manage tasks</div>
     <div class="form-group">
       <label>Username</label>
       <input type="text" id="loginName" placeholder="Enter your Firstname" autocomplete="off">
@@ -617,7 +618,7 @@
     <div class="topbar-logo">System Overview</div>
     <div class="topbar-right">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
-<!--        <div class="sync-dot"></div> Live -->
+        <div class="sync-dot"></div> Live
       </div>
       <div class="user-badge">
         <div class="user-dot"></div>
@@ -784,7 +785,7 @@
   <!-- SOFT SKILLS VIEW -->
   <div id="skillsView" class="main full-width" style="display:none;">
     <div class="sched-nav">
-      <h2>📚 Trainings</h2>
+      <h2>🧠 Soft Skills</h2>
       <div class="sk-half-tabs">
         <button class="sk-htab active" id="skH1" onclick="switchSkillHalf(1)">Quarter 1</button>
         <button class="sk-htab" id="skH2" onclick="switchSkillHalf(2)">Quarter 2</button>
@@ -800,7 +801,7 @@
 
     <!-- ── CERTIFICATES SECTION ── -->
     <div class="sk-cert-section" id="skCertSection">
-      <div class="sk-cert-label">Online Trainings Certificates</div>
+      <div class="sk-cert-label">Certificates</div>
       <div class="sk-cert-title">Upload your certificates once you're done on your training</div>
       <div class="sk-cert-sub">Click the button below to open the shared Google Drive folder and upload your completed training certificates directly.</div>
       <a href="https://drive.google.com/drive/folders/11cRUfe7OvtijJVo5N-YJhJIXpMtNEXHY"
@@ -1574,10 +1575,62 @@ function renderHistTable(){
           ${rangeBadge(a)}
         </td>
         <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
-        <td><div class="pills">${a.employees.map(e=>`<span class="pill ${isPast(a)?'past':''}">${e}</span>`).join('')}</div></td>
+        <td>
+          <div class="pills">${a.employees.map(e=>`<span class="pill ${isPast(a)?'past':''}">${e}</span>`).join('')}</div>
+          ${isAdmin ? `<button class="btn btn-ghost edit-assign-btn" data-aid="${a.id}" style="margin-top:8px;font-size:11px;padding:4px 10px;border-color:rgba(232,197,71,.35);color:var(--accent);">✏ Edit</button>` : ''}
+        </td>
       </tr>`).join('')
     : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No records match the filter.</td></tr>`;
 }
+// ─── EDIT ASSIGNMENT EMPLOYEES ────────────────────────────────────────────
+let _editAssignId = null;
+
+function openEditAssignModal(assignmentId){
+  if(!isAdmin) return;
+  _editAssignId = assignmentId;
+  const a = S.assignments.find(x => x.id === assignmentId);
+  if(!a) return;
+  document.getElementById('editAssignSub').textContent =
+    `${a.task} · ${fmtDate(a.dutyFrom)} → ${fmtDate(a.dutyTo)}`;
+  document.getElementById('editAssignEmpGrid').innerHTML = S.employees.map(e => {
+    const on = a.employees.includes(e);
+    return `<div class="ecc${on?' on':''}" data-emp="${e.replace(/"/g,'&quot;')}" onclick="toggleEditEcc(this)">
+      <div class="ck">${on?'✓':''}</div>${e}
+    </div>`;
+  }).join('');
+  document.getElementById('editAssignModal').classList.add('open');
+}
+
+function closeEditAssignModal(){
+  document.getElementById('editAssignModal').classList.remove('open');
+  _editAssignId = null;
+}
+
+function toggleEditEcc(el){
+  el.classList.toggle('on');
+  el.querySelector('.ck').textContent = el.classList.contains('on') ? '✓' : '';
+}
+
+async function saveEditAssign(){
+  if(!_editAssignId || !isAdmin) return;
+  const a = S.assignments.find(x => x.id === _editAssignId);
+  if(!a) return;
+  const selected = [...document.querySelectorAll('#editAssignEmpGrid .ecc.on')]
+    .map(el => el.dataset.emp).filter(Boolean);
+  if(!selected.length){ showToast('Select at least one employee', true); return; }
+  const toAdd    = selected.filter(e => !a.employees.includes(e));
+  const toRemove = a.employees.filter(e => !selected.includes(e));
+  try {
+    if(toAdd.length)
+      await sb.from('assignment_employees').insert(toAdd.map(e=>({assignment_id:_editAssignId, employee_name:e})));
+    for(const e of toRemove)
+      await sb.from('assignment_employees').delete()
+        .eq('assignment_id', _editAssignId).eq('employee_name', e);
+    showToast('✓ Employees updated');
+  } catch(err){ showToast('Error: '+err.message, true); }
+  closeEditAssignModal();
+}
+
 function renderHistStats(rows){
   const el=document.getElementById('histStats');
   if(!rows.length){el.innerHTML='';return;}
@@ -1754,6 +1807,17 @@ function hClear(){
 function wireInput(id,obj,key,fn){ const el=document.getElementById(id); if(el)el.addEventListener('change',function(){obj[key]=this.value;fn();}); }
 wireInput('hFrom',hf,'from',renderHistTable); wireInput('hTo',hf,'to',renderHistTable);
 wireInput('hTask',hf,'task',renderHistTable); wireInput('hEmp',hf,'emp',renderHistTable);
+
+// Delegated listener for Edit buttons in the history table
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.edit-assign-btn');
+  if(btn && isAdmin){
+    openEditAssignModal(btn.dataset.aid);
+  }
+  // Close edit modal when clicking overlay
+  const modal = document.getElementById('editAssignModal');
+  if(modal && e.target === modal) closeEditAssignModal();
+});
 
 // ─── SCHEDULE HELPERS (MONTHLY BY WEEK) ──────────────────────────────────
 function getSelectedYearMonth(){
@@ -1958,8 +2022,8 @@ function renderSchedule(){
       html += `<span class="scl-sep"></span>`;
     }
     // Leave-type legend — visible to ALL users
-    html += `<span class="scl-item" style="background:rgba(32, 135, 140,.1);border-color:rgba(10, 197, 207,.35);color:#05e2ed;">● Pre-Approved Leave</span>`;
-    html += `<span class="scl-item" style="background:rgba(184, 48, 24,.1);border-color:rgba(237, 21, 29,.35);color:#ffffff;">● Sick Leave</span>`;
+    html += `<span class="scl-item" style="background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.35);color:#c084fc;">● Pre-Approved Leave</span>`;
+    html += `<span class="scl-item" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.35);color:#fb923c;">● Sick Leave</span>`;
     html += `<span class="scl-item" style="background:rgba(163,230,53,.1);border-color:rgba(163,230,53,.35);color:#a3e635;">● Half Day</span>`;
     legendItems.innerHTML = html;
   }
@@ -2089,7 +2153,7 @@ function renderLeaveView(){
   const adminAdd = isAdmin ? `
     <div class="card" style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-        <div class="card-title" style="margin:0;">Leaves Overview</div>
+        <div class="card-title" style="margin:0;">➕ Add Leave</div>
         <button class="btn btn-ghost" onclick="openYearlyLeaveModal()" style="font-size:12px;padding:7px 14px;border-color:rgba(192,132,252,.4);color:#c084fc;gap:5px;">
           🗓 Yearly Planner
         </button>
@@ -2112,7 +2176,7 @@ function renderLeaveView(){
         </div>
         <div class="fg"><label>From Date</label><input type="date" id="lvFrom" style="margin-top:6px;"></div>
         <div class="fg"><label>To Date</label><input type="date" id="lvTo" style="margin-top:6px;"></div>
-        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Record</button>
+        <button class="btn btn-primary" onclick="addLeaveRange()" style="white-space:nowrap;">Add Leave</button>
       </div>
       <p style="font-size:11px;color:var(--muted);margin-top:10px;">💡 Use <strong>Yearly Planner</strong> to set leaves across multiple months and specific days in one go.</p>
     </div>` : '';
@@ -3160,5 +3224,19 @@ scheduleMidnightReset();
 })();
 
 </script>
+<!-- ── EDIT ASSIGNMENT EMPLOYEES MODAL ── -->
+<div class="modal-overlay" id="editAssignModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-close" onclick="closeEditAssignModal()">✕</div>
+    <div class="modal-title">Edit Assigned Employees</div>
+    <div class="modal-sub" id="editAssignSub"></div>
+    <div class="emp-check-grid" id="editAssignEmpGrid"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeEditAssignModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditAssign()" style="flex:1;justify-content:center;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

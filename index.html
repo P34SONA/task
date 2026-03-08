@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -697,6 +698,10 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="count-badge" id="histCount">0 records</span>
+        <button id="deleteActiveTasksBtn" class="btn" onclick="openDeleteActiveTasksModal()"
+          style="display:none;padding:7px 14px;font-size:12px;background:rgba(79,209,197,.1);color:var(--accent2);border:1px solid rgba(79,209,197,.3);">
+          🗑 Delete Active Tasks
+        </button>
         <button id="bulkDeleteTasksBtn" class="btn" onclick="openBulkDeleteTasksModal()"
           style="display:none;padding:7px 14px;font-size:12px;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);">
           🗑 Delete Past Tasks
@@ -721,7 +726,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Task</th><th>Duty Date Range</th><th>Date Assigned</th><th>Assigned Employees</th></tr></thead>
+        <thead><tr><th>Task</th><th>Duty Date Range</th><th></th><th>Date Assigned</th><th>Assigned Employees</th></tr></thead>
         <tbody id="histTbody"></tbody>
       </table>
     </div>
@@ -904,6 +909,46 @@
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-secondary" onclick="closeBulkDeleteLeaveModal()" style="flex:1;justify-content:center;">Cancel</button>
       <button class="btn" onclick="executeBulkDeleteLeave()" style="flex:1;justify-content:center;background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.35);">🗑 Delete Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT ASSIGNMENT MODAL ── -->
+<div class="modal-overlay" id="editAssignmentModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-close" onclick="closeEditAssignmentModal()">✕</div>
+    <div class="modal-title">✏️ Edit Assignment</div>
+    <div class="modal-sub" id="editAssignmentSub">Update the employees assigned to this active task.</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Select Employees</div>
+      <div class="emp-cbs" id="editAssignmentEmpGrid" style="gap:8px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="closeEditAssignmentModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditAssignment()" style="flex:1;justify-content:center;">✓ Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE ACTIVE TASKS MODAL ── -->
+<div class="modal-overlay" id="deleteActiveTasksModal">
+  <div class="modal" style="max-width:520px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-close" onclick="closeDeleteActiveTasksModal()">✕</div>
+    <div class="modal-title">🗑 Delete Active Tasks</div>
+    <div class="modal-sub">Delete task assignment records that are currently active (today falls within duty date range).</div>
+    <div style="margin-bottom:16px;">
+      <div class="fg">
+        <label style="margin-bottom:6px;display:block;">Task</label>
+        <select id="datTask" style="margin-top:4px;" onchange="datRefresh()">
+          <option value="">— All active tasks —</option>
+        </select>
+      </div>
+    </div>
+    <div id="datSummary" style="font-size:13px;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;min-height:36px;"></div>
+    <div id="datPreviewList" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;display:none;"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeDeleteActiveTasksModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn" onclick="executeDeleteActiveTasks()" style="flex:1;justify-content:center;background:rgba(79,209,197,.12);color:var(--accent2);border:1px solid rgba(79,209,197,.3);">🗑 Delete</button>
     </div>
   </div>
 </div>
@@ -1555,6 +1600,8 @@ function toggleEcb(el){ if(!el.classList.contains('dis'))el.classList.toggle('se
 function renderHistTable(){
   const bdtBtn = document.getElementById('bulkDeleteTasksBtn');
   if(bdtBtn) bdtBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  const datBtn = document.getElementById('deleteActiveTasksBtn');
+  if(datBtn) datBtn.style.display = isAdmin ? 'inline-flex' : 'none';
 
   const tbody=document.getElementById('histTbody');
   let rows=[...S.assignments];
@@ -1564,8 +1611,17 @@ function renderHistTable(){
   rows.sort((a,b)=>b.dutyFrom.localeCompare(a.dutyFrom));
   document.getElementById('histCount').textContent=rows.length+' record'+(rows.length!==1?'s':'');
   renderHistStats(rows);
+  const t = localToday();
   tbody.innerHTML=rows.length
-    ? rows.map(a=>`<tr>
+    ? rows.map(a=>{
+        const isActive = a.dutyFrom <= t && a.dutyTo >= t;
+        const editBtn = isAdmin && isActive
+          ? `<button class="btn btn-ghost" onclick="openEditAssignmentModal('${a.id}')"
+               style="padding:5px 10px;font-size:11px;color:var(--accent2);border-color:rgba(79,209,197,.3);white-space:nowrap;">
+               ✏️ Edit
+             </button>`
+          : '';
+        return `<tr>
         <td><strong>${a.task}</strong></td>
         <td>
           <span class="db">${fmtDate(a.dutyFrom)}</span>
@@ -1573,10 +1629,11 @@ function renderHistTable(){
           <span class="db">${fmtDate(a.dutyTo)}</span>
           ${rangeBadge(a)}
         </td>
+        <td style="white-space:nowrap;">${editBtn}</td>
         <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
         <td><div class="pills">${a.employees.map(e=>`<span class="pill ${isPast(a)?'past':''}">${e}</span>`).join('')}</div></td>
-      </tr>`).join('')
-    : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No records match the filter.</td></tr>`;
+      </tr>`;}).join('')
+    : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">No records match the filter.</td></tr>`;
 }
 function renderHistStats(rows){
   const el=document.getElementById('histStats');
@@ -1684,6 +1741,140 @@ async function executeBulkDeleteTasks(){
   closeBulkDeleteTasksModal();
 }
 
+
+// ─── EDIT ASSIGNMENT MODAL ────────────────────────────────────────────────
+let editAssignCtx = null;
+
+function openEditAssignmentModal(assignmentId){
+  if(!isAdmin) return;
+  const a = S.assignments.find(x=>x.id==assignmentId);
+  if(!a) return;
+  editAssignCtx = a;
+  document.getElementById('editAssignmentSub').textContent =
+    `${a.task} · ${fmtDate(a.dutyFrom)} → ${fmtDate(a.dutyTo)}`;
+
+  // Build employee checkboxes
+  document.getElementById('editAssignmentEmpGrid').innerHTML = S.employees.map(e=>{
+    const sel = a.employees.includes(e);
+    return `<div class="ecb${sel?' sel':''}" onclick="toggleEditEcb(this)">
+      <div class="cki">${sel?'✓':''}</div>
+      <span style="font-size:13px;">${e}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('editAssignmentModal').classList.add('open');
+}
+function closeEditAssignmentModal(){
+  document.getElementById('editAssignmentModal').classList.remove('open');
+  editAssignCtx = null;
+}
+document.getElementById('editAssignmentModal').addEventListener('click',function(e){ if(e.target===this)closeEditAssignmentModal(); });
+
+function toggleEditEcb(el){
+  el.classList.toggle('sel');
+  el.querySelector('.cki').textContent = el.classList.contains('sel') ? '✓' : '';
+}
+
+async function saveEditAssignment(){
+  if(!editAssignCtx||!isAdmin) return;
+  const a = editAssignCtx;
+  const selected = [...document.querySelectorAll('#editAssignmentEmpGrid .ecb.sel')]
+    .map(el=>el.querySelector('span').textContent.trim());
+  const toAdd    = selected.filter(e=>!a.employees.includes(e));
+  const toRemove = a.employees.filter(e=>!selected.includes(e));
+  try {
+    if(toAdd.length){
+      await sb.from('assignment_employees').insert(toAdd.map(e=>({assignment_id:a.id, employee_name:e})));
+    }
+    for(const e of toRemove){
+      await sb.from('assignment_employees').delete()
+        .eq('assignment_id',a.id).eq('employee_name',e);
+    }
+    showToast('✓ Assignment updated');
+  } catch(err){ showToast('Error: '+err.message, true); }
+  closeEditAssignmentModal();
+}
+
+// ─── DELETE ACTIVE TASKS MODAL ────────────────────────────────────────────
+function isActiveAssignment(a){
+  const t = localToday();
+  return a.dutyFrom <= t && a.dutyTo >= t;
+}
+
+function openDeleteActiveTasksModal(){
+  if(!isAdmin) return;
+  const sel = document.getElementById('datTask');
+  sel.innerHTML = '<option value="">— All active tasks —</option>' +
+    S.tasks.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('datTask').value = '';
+  datRefresh();
+  document.getElementById('deleteActiveTasksModal').classList.add('open');
+}
+function closeDeleteActiveTasksModal(){
+  document.getElementById('deleteActiveTasksModal').classList.remove('open');
+}
+document.getElementById('deleteActiveTasksModal').addEventListener('click',function(e){ if(e.target===this)closeDeleteActiveTasksModal(); });
+
+function datGetMatching(){
+  const taskFilter = document.getElementById('datTask').value;
+  return S.assignments.filter(a=>{
+    if(!isActiveAssignment(a)) return false;
+    if(taskFilter && a.task !== taskFilter) return false;
+    return true;
+  });
+}
+
+function datRefresh(){
+  const matches = datGetMatching();
+  const taskFilter = document.getElementById('datTask').value;
+  const sumEl = document.getElementById('datSummary');
+  const previewEl = document.getElementById('datPreviewList');
+
+  if(!matches.length){
+    sumEl.innerHTML = `<span style="color:var(--muted);">No active tasks found matching the criteria.</span>`;
+    previewEl.style.display = 'none';
+    return;
+  }
+
+  const totalEmps = matches.reduce((s,a)=>s+a.employees.length,0);
+  sumEl.innerHTML =
+    `Found <strong style="color:var(--accent2)">${matches.length}</strong> active assignment(s)` +
+    (taskFilter?` for task <strong style="color:var(--accent)">${taskFilter}</strong>`:'') +
+    ` — <strong style="color:var(--muted)">${totalEmps}</strong> employee-task record(s).` +
+    `<br><span style="font-size:11px;color:var(--accent2);margin-top:4px;display:block;">⚠ This permanently deletes the active assignments and all their employee records.</span>`;
+
+  previewEl.style.display = 'block';
+  previewEl.innerHTML = matches.map(a=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);gap:12px;">
+      <div>
+        <span style="font-weight:700;font-size:13px;color:var(--text);">${a.task}</span>
+        <span style="font-size:11px;color:var(--accent2);margin-left:8px;font-family:'DM Mono',monospace;">${fmtDate(a.dutyFrom)} → ${fmtDate(a.dutyTo)}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:260px;">
+        ${a.employees.map(e=>`<span class="pill" style="font-size:10px;padding:2px 7px;">${e}</span>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+async function executeDeleteActiveTasks(){
+  if(!isAdmin) return;
+  const matches = datGetMatching();
+  if(!matches.length){ showToast('No matching active tasks to delete'); return; }
+  showToast('Deleting…');
+  const ids = matches.map(a=>a.id);
+  for(let i=0;i<ids.length;i+=100){
+    const batch = ids.slice(i,i+100);
+    const {error:e1} = await sb.from('assignment_employees').delete().in('assignment_id', batch);
+    if(e1){ showToast('Error: '+e1.message, true); return; }
+  }
+  for(let i=0;i<ids.length;i+=100){
+    const batch = ids.slice(i,i+100);
+    const {error:e2} = await sb.from('assignments').delete().in('id', batch);
+    if(e2){ showToast('Error: '+e2.message, true); return; }
+  }
+  showToast(`✓ Deleted ${ids.length} active assignment(s)`);
+  closeDeleteActiveTasksModal();
+}
 
 function renderEmpView(){
   if(curUser) document.getElementById('empGreet').textContent=isGuest?'Welcome, Guest 👋':`Hello, ${curUser}! 👋`;

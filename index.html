@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -548,6 +549,7 @@
   .notes-cp-reset{ flex:1; background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:11px; font-family:'DM Sans',sans-serif; padding:4px 0; cursor:pointer; transition:all .15s; }
   .notes-cp-reset:hover{ border-color:var(--red); color:var(--red); }
   .notes-cell{ transition:background .1s; }
+  .admin-only{ display:none; } /* shown via JS for admins only */
 
   /* ── NOTES VIEW ── */
   .sk-half-tabs{ display:flex; gap:6px; }
@@ -693,7 +695,7 @@
     <button class="tab" id="tabSched" onclick="switchTab('schedule')">📆 Schedule</button>
     <button class="tab" id="tabLeave" onclick="switchTab('leave')">🌴 Pre-Approved Leaves</button>
     <button class="tab" id="tabSkills" onclick="switchTab('skills')">🧠 Soft Skills</button>
-    <button class="tab" id="tabNotes" onclick="switchTab('notes')" style="display:none;">📝 Notes</button>
+    <button class="tab" id="tabNotes" onclick="switchTab('notes')">📝 Notes</button>
   </div>
 
   <!-- ADMIN -->
@@ -890,7 +892,7 @@
             <div class="notes-panel-title" style="color:var(--accent2);">Schedule Notes</div>
             <div class="notes-panel-sub">Graveyard shift logs</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearNotePanel(['schedGraveyard'])" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['schedGraveyard'])" title="Clear">🗑</button>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -913,7 +915,7 @@
             <div class="notes-panel-title" style="color:var(--accent2);">Schedule Notes</div>
             <div class="notes-panel-sub">6-3 shift logs</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearNotePanel(['sched63'])" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['sched63'])" title="Clear">🗑</button>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -936,7 +938,7 @@
             <div class="notes-panel-title" style="color:var(--accent);">PayPro & Batch Upload</div>
             <div class="notes-panel-sub">Assignment logs & notes</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearNotePanel(['paypro1'])" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['paypro1'])" title="Clear">🗑</button>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -959,7 +961,7 @@
             <div class="notes-panel-title" style="color:var(--red);">Sunday Off</div>
             <div class="notes-panel-sub">Day-off schedule logs</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearNotePanel(['sundayOff'])" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['sundayOff'])" title="Clear">🗑</button>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -982,7 +984,7 @@
             <div class="notes-panel-title" style="color:#34d399;">GCash Notes</div>
             <div class="notes-panel-sub">Weekly GCash assignments</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearNotePanel(['gcash'])" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['gcash'])" title="Clear">🗑</button>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -1005,12 +1007,11 @@
             <div class="notes-panel-title" style="color:#a78bfa;">Changes Notes</div>
             <div class="notes-panel-sub">System & process change logs</div>
           </div>
-          <button class="notes-clear-btn" onclick="clearChangesText()" title="Clear">🗑</button>
+          <button class="notes-clear-btn admin-only" onclick="clearChangesText()" title="Clear">🗑</button>
         </div>
         <div style="padding:14px;display:flex;flex-direction:column;flex:1;">
           <textarea id="changesTextarea"
             placeholder="Type your change notes here..."
-            oninput="changesTextDebounce(this.value)"
             style="width:100%;min-height:380px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;padding:12px;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .15s;"
             onfocus="this.style.borderColor='rgba(167,139,250,.5)'"
             onblur="this.style.borderColor='var(--border)'"
@@ -1436,14 +1437,13 @@ function startApp(){
   if(isAdmin){ ta.disabled=false; ta.style.opacity='1'; ta.style.cursor='pointer'; }
   else        { ta.disabled=true;  ta.style.opacity='0.3'; ta.style.cursor='not-allowed'; }
 
-  // Show Notes tab only for admins
+  // Show Notes tab for all logged-in users (not guests)
   const tnotes = document.getElementById('tabNotes');
-  if(tnotes) tnotes.style.display = isAdmin ? '' : 'none';
+  if(tnotes) tnotes.style.display = isGuest ? 'none' : '';
 
-  // Guests: hide all tabs except Schedule
   ['tabEmp','tabLeave','tabSkills','tabNotes'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){ el.style.display = isGuest ? 'none' : (id==='tabNotes' && !isAdmin) ? 'none' : el.style.display; }
+    if(el){ el.style.display = isGuest ? 'none' : el.style.display; }
   });
 
   // Init skills year selector
@@ -3447,19 +3447,22 @@ function renderNoteSection(sectionKey){
     const dataCols = Array.from({length:NOTES_NUM_COLS}, (_,c)=>{
       const v = row ? ((row.cols||[])[c]||'').replace(/"/g,'&quot;') : '';
       const bg = cellColors[c] ? `style="background:${cellColors[c]}33;color:${cellColors[c]};"` : '';
-      return `<input class="notes-cell" value="${v}" placeholder="" ${bg}
-        data-col="${c}"
-        oninput="notesEnsureRow('${sectionKey}',${i});notesCell('${sectionKey}',${i},${c},this.value)"
-        oncontextmenu="openCellCp(event,'${sectionKey}',${i},${c});return false;"
-      >`;
+      if(isAdmin){
+        return `<input class="notes-cell" value="${v}" placeholder="" ${bg}
+          data-col="${c}"
+          oninput="notesEnsureRow('${sectionKey}',${i});notesCell('${sectionKey}',${i},${c},this.value)"
+          oncontextmenu="openCellCp(event,'${sectionKey}',${i},${c});return false;"
+        >`;
+      }
+      return `<input class="notes-cell" value="${v}" placeholder="" ${bg} data-col="${c}" readonly style="cursor:default;${cellColors[c]?`background:${cellColors[c]}33;color:${cellColors[c]};`:''}">`;
     }).join('');
     return `<div class="notes-row">
       <div class="notes-row-num">${i+1}</div>
       <input class="notes-row-name" value="${name}"
         placeholder="${row ? meta.cols[0] : ''}"
-        oninput="notesEnsureRow('${sectionKey}',${i});notesName('${sectionKey}',${i},this.value)"
+        ${isAdmin ? `oninput="notesEnsureRow('${sectionKey}',${i});notesName('${sectionKey}',${i},this.value)"` : 'readonly style="cursor:default;"'}
       >${dataCols}
-      <button class="notes-row-del" onclick="deleteNoteRow('${sectionKey}',${i})" title="Remove row">×</button>
+      ${isAdmin ? `<button class="notes-row-del" onclick="deleteNoteRow('${sectionKey}',${i})" title="Remove row">×</button>` : '<div style="flex:0 0 32px;"></div>'}
     </div>`;
   }).join('');
 }
@@ -3547,12 +3550,27 @@ function _notesFlush(sectionKey, rowIdx){
 }
 
 async function renderNotesView(){
-  if(!isAdmin) return;
+  if(isGuest) return;
   if(!_notesData._loaded){
     await loadNotesData();
     _notesData._loaded = true;
   }
   Object.keys(NOTES_SECTIONS).forEach(k => renderNoteSection(k));
+  // Show/hide admin-only controls
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
+  // Configure Changes textarea
+  const ta = document.getElementById('changesTextarea');
+  if(ta){
+    if(isAdmin){
+      ta.removeAttribute('readonly');
+      ta.style.cursor = '';
+      ta.oninput = function(){ changesTextDebounce(this.value); };
+    } else {
+      ta.setAttribute('readonly', true);
+      ta.style.cursor = 'default';
+      ta.oninput = null;
+    }
+  }
   // Load changes text
   loadChangesText();
 }

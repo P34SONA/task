@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -523,7 +521,27 @@
   .notes-row:hover .notes-row-name{ background:color-mix(in srgb, var(--surface) 88%, white 12%); }
   .notes-row:focus-within{ background:rgba(232,197,71,.04) !important; }
   .notes-row:focus-within .notes-row-name{ background:rgba(232,197,71,.07); }
-  .notes-row-num{ flex:0 0 32px; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; border-right:1px solid var(--border); background:var(--surface2); flex-shrink:0; user-select:none; position:sticky; left:0; z-index:2; }
+  .notes-row.row-selected{ background:rgba(232,197,71,.10) !important; }
+  .notes-row.row-selected .notes-row-num{ background:rgba(232,197,71,.18) !important; color:var(--accent); }
+  .notes-row.row-selected .notes-row-name{ background:rgba(232,197,71,.12) !important; }
+  .notes-row.row-selected .notes-cell{ background:rgba(232,197,71,.04) !important; }
+  .notes-row-num{ flex:0 0 32px; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; border-right:1px solid var(--border); background:var(--surface2); flex-shrink:0; user-select:none; position:sticky; left:0; z-index:2; cursor:pointer; transition:background .12s,color .12s; }
+  .notes-row-num:hover{ background:rgba(232,197,71,.15); color:var(--accent); }
+  .notes-bulk-bar{ display:none; align-items:center; gap:10px; padding:8px 14px; background:rgba(232,197,71,.08); border-bottom:1px solid rgba(232,197,71,.2); font-size:12px; flex-wrap:wrap; }
+  .notes-bulk-bar.visible{ display:flex; }
+  .notes-bulk-count{ font-family:'DM Mono',monospace; color:var(--accent); font-weight:700; }
+  .notes-bulk-btn{ padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .notes-bulk-btn.copy{ background:rgba(79,209,197,.1); border-color:rgba(79,209,197,.3); color:var(--accent2); }
+  .notes-bulk-btn.copy:hover{ background:rgba(79,209,197,.2); }
+  .notes-hdr-btn{ display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all .15s; font-family:'DM Sans',sans-serif; line-height:1; }
+  .notes-hdr-btn.panel-copy{ background:rgba(79,209,197,.08); border-color:rgba(79,209,197,.3); color:var(--accent2); }
+  .notes-hdr-btn.panel-copy:hover{ background:rgba(79,209,197,.2); border-color:var(--accent2); }
+  .notes-hdr-btn.panel-del{ background:rgba(248,113,113,.08); border-color:rgba(248,113,113,.25); color:var(--red); }
+  .notes-hdr-btn.panel-del:hover{ background:rgba(248,113,113,.2); border-color:var(--red); }
+  .notes-bulk-btn.del{ background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
+  .notes-bulk-btn.del:hover{ background:rgba(248,113,113,.2); }
+  .notes-bulk-btn.desel{ background:transparent; border-color:var(--border); color:var(--muted); }
+  .notes-bulk-btn.desel:hover{ border-color:var(--muted); color:var(--text); }
   .notes-row-name{ flex:0 0 140px; background:var(--surface); border:none; border-right:2px solid var(--border); outline:none; font-family:'DM Mono',monospace; font-size:12px; color:var(--text); padding:7px 10px; flex-shrink:0; position:sticky; left:32px; z-index:2; }
   .notes-cell{ flex:0 0 100px; background:transparent; border:none; border-right:1px solid var(--border); outline:none; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--text); padding:7px 8px; flex-shrink:0; text-align:center; }
   .notes-cell:focus{ background:rgba(232,197,71,.06); }
@@ -532,7 +550,7 @@
   .notes-row-del{ flex:0 0 32px; background:none; border:none; border-left:1px solid var(--border); color:transparent; cursor:pointer; font-size:14px; padding:0; transition:all .15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .notes-row:hover .notes-row-del{ color:rgba(248,113,113,.4); }
   .notes-row-del:hover{ color:var(--red) !important; background:rgba(248,113,113,.1); }
-  .notes-clear-btn{ background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.25); border-radius:8px; color:var(--red); font-size:13px; padding:5px 9px; cursor:pointer; transition:all .15s; flex-shrink:0; line-height:1; }
+  .notes-clear-btn{ background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.25); border-radius:8px; color:var(--red); font-size:12px; font-weight:600; padding:5px 10px; cursor:pointer; transition:all .15s; flex-shrink:0; line-height:1; display:inline-flex; align-items:center; gap:4px; }
   .notes-clear-btn:hover{ background:rgba(248,113,113,.2); border-color:var(--red); }
   .notes-add-btn-inline{ background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:11px; font-family:'DM Sans',sans-serif; padding:3px 10px; cursor:pointer; transition:all .15s; }
   .notes-add-btn-inline:hover{ border-color:var(--accent); color:var(--accent); }
@@ -811,6 +829,22 @@
   <div id="scheduleView" class="main full-width" style="display:none;">
     <div class="sched-nav">
       <h2>📆 Monthly Schedule</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <a href="https://docs.google.com/presentation/d/1MJCEG_sNl1_LUKeZukKdhwd-FDaJHsS1XVM2tIIoujY/edit?slide=id.g1ede8d7e8cb_0_0#slide=id.g1ede8d7e8cb_0_0"
+           target="_blank"
+           style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.35);color:var(--accent);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;white-space:nowrap;"
+           onmouseover="this.style.background='rgba(232,197,71,.2)';this.style.transform='translateY(-1px)'"
+           onmouseout="this.style.background='rgba(232,197,71,.1)';this.style.transform=''">
+          📋 Monday Advisory
+        </a>
+        <a href="https://drive.google.com/drive/folders/1F8C7fBLXKHwHH1RyK6UiLkn4eutzx1D5"
+           target="_blank"
+           style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);background:rgba(79,209,197,.1);border:1px solid rgba(79,209,197,.35);color:var(--accent2);font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;white-space:nowrap;"
+           onmouseover="this.style.background='rgba(79,209,197,.2)';this.style.transform='translateY(-1px)'"
+           onmouseout="this.style.background='rgba(79,209,197,.1)';this.style.transform=''">
+          📋 Tuesday Advisory
+        </a>
+      </div>
       <div class="month-picker">
         <button class="btn btn-ghost" onclick="shiftMonth(-1)">← Prev</button>
         <input type="month" id="monthAnchor" onchange="renderSchedule()">
@@ -875,11 +909,26 @@
 
   </div><!-- /skillsView -->
 
-  <!-- NOTES VIEW — admin only -->
+  <!-- NOTES VIEW — all logged-in users -->
   <div id="notesView" class="main full-width" style="display:none;">
-    <div class="sched-nav" style="margin-bottom:24px;">
-      <h2>📝 Admin Notes</h2>
-      <div style="font-size:13px;color:var(--muted);">Internal logs and important reference notes</div>
+    <div class="sched-nav" style="margin-bottom:12px;">
+      <h2>📝 Notes</h2>
+      <div style="font-size:13px;color:var(--muted);">Reference logs — <span id="notesDbStatus" style="font-family:'DM Mono',monospace;font-size:11px;"></span></div>
+    </div>
+    <!-- Admin: SQL setup notice shown only if notes table missing -->
+    <div id="notesSqlBanner" style="display:none;background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.3);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:13px;">
+      <strong style="color:var(--accent);">⚠ One-time setup required:</strong>
+      <span style="color:var(--muted);margin-left:6px;">Run this SQL in your Supabase SQL Editor to enable persistent notes storage:</span>
+      <pre style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);overflow-x:auto;white-space:pre;">CREATE TABLE IF NOT EXISTS notes (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  section_key text NOT NULL,
+  row_idx integer NOT NULL,
+  row_data jsonb NOT NULL DEFAULT '{}',
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(section_key, row_idx)
+);
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON notes FOR ALL USING (true) WITH CHECK (true);</pre>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -892,7 +941,10 @@
             <div class="notes-panel-title" style="color:var(--accent2);">Schedule Notes</div>
             <div class="notes-panel-sub">Graveyard shift logs</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['schedGraveyard'])" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-copy" onclick="openCopyPanelModal('schedGraveyard')" title="Copy entire panel to another">📋 Copy Panel</button>
+            <button class="notes-hdr-btn panel-del" onclick="clearNotePanel(['schedGraveyard'])" title="Delete all rows">🗑 Delete All</button>
+          </div>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -915,7 +967,10 @@
             <div class="notes-panel-title" style="color:var(--accent2);">Schedule Notes</div>
             <div class="notes-panel-sub">6-3 shift logs</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['sched63'])" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-copy" onclick="openCopyPanelModal('sched63')" title="Copy entire panel to another">📋 Copy Panel</button>
+            <button class="notes-hdr-btn panel-del" onclick="clearNotePanel(['sched63'])" title="Delete all rows">🗑 Delete All</button>
+          </div>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -938,7 +993,10 @@
             <div class="notes-panel-title" style="color:var(--accent);">PayPro & Batch Upload</div>
             <div class="notes-panel-sub">Assignment logs & notes</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['paypro1'])" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-copy" onclick="openCopyPanelModal('paypro1')" title="Copy entire panel to another">📋 Copy Panel</button>
+            <button class="notes-hdr-btn panel-del" onclick="clearNotePanel(['paypro1'])" title="Delete all rows">🗑 Delete All</button>
+          </div>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -961,7 +1019,10 @@
             <div class="notes-panel-title" style="color:var(--red);">Sunday Off</div>
             <div class="notes-panel-sub">Day-off schedule logs</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['sundayOff'])" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-copy" onclick="openCopyPanelModal('sundayOff')" title="Copy entire panel to another">📋 Copy Panel</button>
+            <button class="notes-hdr-btn panel-del" onclick="clearNotePanel(['sundayOff'])" title="Delete all rows">🗑 Delete All</button>
+          </div>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -984,7 +1045,10 @@
             <div class="notes-panel-title" style="color:#34d399;">GCash Notes</div>
             <div class="notes-panel-sub">Weekly GCash assignments</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearNotePanel(['gcash'])" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-copy" onclick="openCopyPanelModal('gcash')" title="Copy entire panel to another">📋 Copy Panel</button>
+            <button class="notes-hdr-btn panel-del" onclick="clearNotePanel(['gcash'])" title="Delete all rows">🗑 Delete All</button>
+          </div>
         </div>
         <div class="notes-body" style="padding:0;overflow-x:auto;">
           <div class="notes-tbl-scroll"><div class="notes-tbl-inner">
@@ -1007,7 +1071,9 @@
             <div class="notes-panel-title" style="color:#a78bfa;">Changes Notes</div>
             <div class="notes-panel-sub">System & process change logs</div>
           </div>
-          <button class="notes-clear-btn admin-only" onclick="clearChangesText()" title="Clear">🗑</button>
+          <div class="admin-only" style="display:flex;gap:6px;">
+            <button class="notes-hdr-btn panel-del" onclick="clearChangesText()" title="Delete all text">🗑 Delete All</button>
+          </div>
         </div>
         <div style="padding:14px;display:flex;flex-direction:column;flex:1;">
           <textarea id="changesTextarea"
@@ -1025,6 +1091,21 @@
     </div>
   </div><!-- /notesView -->
 </div><!-- /app -->
+
+<!-- ── COPY NOTES TO PANEL MODAL ── -->
+<div class="modal-overlay" id="copyNotesModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-close" onclick="closeCopyNotesModal()">✕</div>
+    <div class="modal-title">📋 Copy Rows To Panel</div>
+    <div class="modal-sub" id="copyNotesModalSub">Select a destination panel to paste the copied rows into.</div>
+    <div id="copyNotesPanelGrid" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+      <input type="checkbox" id="copyNotesAppend" checked style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
+      <label for="copyNotesAppend" style="font-size:13px;color:var(--muted);cursor:pointer;">Append after existing rows <span style="font-size:11px;font-family:'DM Mono',monospace;">(uncheck to replace)</span></label>
+    </div>
+    <button class="btn btn-secondary btn-full" onclick="closeCopyNotesModal()" style="justify-content:center;">Cancel</button>
+  </div>
+</div>
 
 <!-- ── YEARLY LEAVE PLANNER MODAL ── -->
 <div class="modal-overlay" id="yearlyLeaveModal">
@@ -3346,68 +3427,114 @@ const NOTES_SECTIONS = {
   gcash:          { label:'GCash Notes',                cols:['Week','Names'] },
 };
 
-// In-memory store (persisted to Supabase soft_skills table using a special key prefix)
+// In-memory store — persisted to Supabase `notes` table
 const _notesData = {};
+const NOTES_NUM_COLS = 14;
+
+// ── Ensure `notes` table exists (run once on first load) ─────────────────
+// SQL to run in Supabase SQL Editor if table doesn't exist:
+// CREATE TABLE IF NOT EXISTS notes (
+//   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+//   section_key text NOT NULL,
+//   row_idx integer NOT NULL,
+//   row_data jsonb NOT NULL DEFAULT '{}',
+//   updated_at timestamptz DEFAULT now(),
+//   UNIQUE(section_key, row_idx)
+// );
+// ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "Allow all" ON notes FOR ALL USING (true) WITH CHECK (true);
 
 async function loadNotesData(){
   try {
-    const {data} = await sb.from('soft_skills').select('*').like('content','NOTES::%');
+    const {data, error} = await sb.from('notes').select('*').order('row_idx');
+    if(error) throw error;
+    // Clear and rebuild from DB
+    Object.keys(NOTES_SECTIONS).forEach(k=>{ _notesData[k] = []; });
     (data||[]).forEach(r=>{
-      // We store notes in soft_skills rows where year=0, month=section_idx, row_num=row_idx
-      // content = "NOTES::sectionKey::rowJSON"
-      const raw = r.content || '';
+      if(!_notesData[r.section_key]) _notesData[r.section_key] = [];
+      _notesData[r.section_key][r.row_idx] = r.row_data;
+    });
+    // Filter holes
+    Object.keys(_notesData).forEach(k=>{
+      _notesData[k] = (_notesData[k]||[]).filter(v=>v!=null);
+    });
+    // Also load changes text from notes table (section_key='__changes__', row_idx=0)
+  } catch(e){
+    console.warn('notes table not found, attempting migration from soft_skills…', e);
+    await _migrateNotesFromSoftSkills();
+  }
+}
+
+// Migration: pull old data from soft_skills and push to new notes table
+async function _migrateNotesFromSoftSkills(){
+  try {
+    const {data} = await sb.from('soft_skills').select('*').like('content','NOTES::%');
+    const toInsert = [];
+    (data||[]).forEach(r=>{
+      const raw = r.content||'';
       if(!raw.startsWith('NOTES::')) return;
       const parts = raw.split('::');
       if(parts.length < 3) return;
       const sectionKey = parts[1];
       try {
         const rowData = JSON.parse(parts.slice(2).join('::'));
-        if(!_notesData[sectionKey]) _notesData[sectionKey] = [];
+        if(!_notesData[sectionKey]) _notesData[sectionKey]=[];
         _notesData[sectionKey][r.month] = rowData;
-      } catch(e){}
+        toInsert.push({section_key:sectionKey, row_idx:r.month, row_data:rowData});
+      } catch(e2){}
     });
-    // Filter out holes
     Object.keys(_notesData).forEach(k=>{
       _notesData[k] = (_notesData[k]||[]).filter(Boolean);
     });
+    if(toInsert.length){
+      await sb.from('notes').upsert(toInsert, {onConflict:'section_key,row_idx'});
+    }
   } catch(e){
-    // Fallback to localStorage
+    // Last resort: localStorage
     Object.keys(NOTES_SECTIONS).forEach(k=>{
       try{ const v=localStorage.getItem('notes_'+k); if(v) _notesData[k]=JSON.parse(v); }catch(e2){}
     });
   }
 }
 
-const NOTES_NUM_COLS = 14; // data columns per row (excluding Name column)
-
-async function saveNoteRow(sectionKey, rowIdx, cols){
+async function saveNoteRow(sectionKey, rowIdx, rowObj){
   if(!_notesData[sectionKey]) _notesData[sectionKey]=[];
-  _notesData[sectionKey][rowIdx] = cols;
+  _notesData[sectionKey][rowIdx] = rowObj;
   try {
-    await sb.from('soft_skills').upsert({
-      year:0, month:rowIdx, row_num: Object.keys(NOTES_SECTIONS).indexOf(sectionKey)+1,
-      content:`NOTES::${sectionKey}::${JSON.stringify(cols)}`
-    },{onConflict:'year,month,row_num'});
+    const {error} = await sb.from('notes').upsert(
+      {section_key:sectionKey, row_idx:rowIdx, row_data:rowObj, updated_at:new Date().toISOString()},
+      {onConflict:'section_key,row_idx'}
+    );
+    if(error) throw error;
   } catch(e){
-    try{ localStorage.setItem('notes_'+sectionKey, JSON.stringify(_notesData[sectionKey])); }catch(e2){}
+    // Fallback soft_skills
+    try {
+      await sb.from('soft_skills').upsert({
+        year:0, month:rowIdx, row_num: Object.keys(NOTES_SECTIONS).indexOf(sectionKey)+1,
+        content:`NOTES::${sectionKey}::${JSON.stringify(rowObj)}`
+      },{onConflict:'year,month,row_num'});
+    } catch(e2){}
   }
 }
 
 async function deleteNoteRow(sectionKey, rowIdx){
+  if(!isAdmin) return;
   if(!_notesData[sectionKey]) return;
-  _notesData[sectionKey].splice(rowIdx,1);
+  // Remove from memory and re-index
+  _notesData[sectionKey].splice(rowIdx, 1);
   renderNoteSection(sectionKey);
   try {
-    await sb.from('soft_skills').delete()
-      .eq('year',0).eq('month',rowIdx)
-      .eq('row_num', Object.keys(NOTES_SECTIONS).indexOf(sectionKey)+1);
+    // Delete the specific row
+    await sb.from('notes').delete()
+      .eq('section_key', sectionKey)
+      .eq('row_idx', rowIdx);
+    // Re-save all remaining rows with updated indices
     const rows = _notesData[sectionKey]||[];
-    for(let i=0;i<rows.length;i++){
-      if(!rows[i]) continue;
-      await sb.from('soft_skills').upsert({
-        year:0, month:i, row_num: Object.keys(NOTES_SECTIONS).indexOf(sectionKey)+1,
-        content:`NOTES::${sectionKey}::${JSON.stringify(rows[i])}`
-      },{onConflict:'year,month,row_num'});
+    // Delete all rows for this section first, then re-insert with correct indices
+    await sb.from('notes').delete().eq('section_key', sectionKey);
+    if(rows.length){
+      const toInsert = rows.map((r,i)=>({section_key:sectionKey, row_idx:i, row_data:r, updated_at:new Date().toISOString()}));
+      await sb.from('notes').insert(toInsert);
     }
   } catch(e){
     try{ localStorage.setItem('notes_'+sectionKey, JSON.stringify(_notesData[sectionKey])); }catch(e2){}
@@ -3441,30 +3568,276 @@ function renderNoteSection(sectionKey){
   const meta = NOTES_SECTIONS[sectionKey];
   const display = [...rows];
   while(display.length < 15) display.push(null);
-  el.innerHTML = display.map((row,i)=>{
-    const name = row ? (row.name||row.a||'').replace(/"/g,'&quot;') : '';
-    const cellColors = row ? (row.cellColors||{}) : {};
-    const dataCols = Array.from({length:NOTES_NUM_COLS}, (_,c)=>{
-      const v = row ? ((row.cols||[])[c]||'').replace(/"/g,'&quot;') : '';
-      const bg = cellColors[c] ? `style="background:${cellColors[c]}33;color:${cellColors[c]};"` : '';
-      if(isAdmin){
-        return `<input class="notes-cell" value="${v}" placeholder="" ${bg}
-          data-col="${c}"
-          oninput="notesEnsureRow('${sectionKey}',${i});notesCell('${sectionKey}',${i},${c},this.value)"
-          oncontextmenu="openCellCp(event,'${sectionKey}',${i},${c});return false;"
-        >`;
-      }
-      return `<input class="notes-cell" value="${v}" placeholder="" ${bg} data-col="${c}" readonly style="cursor:default;${cellColors[c]?`background:${cellColors[c]}33;color:${cellColors[c]};`:''}">`;
+
+  // Build bulk-action bar (inside the panel, above rows)
+  const bulkBarId = sectionKey+'BulkBar';
+  const totalRows = display.length;
+
+  el.innerHTML = [
+    // Bulk action bar
+    `<div class="notes-bulk-bar" id="${bulkBarId}">
+      <span class="notes-bulk-count" id="${bulkBarId}Count">0 selected</span>
+      <button class="notes-bulk-btn copy" onclick="notesBulkCopyRows('${sectionKey}')">📋 Copy Rows</button>
+      <button class="notes-bulk-btn" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:#a78bfa;" onclick="notesBulkCopy('${sectionKey}')">📤 Copy to Panel</button>
+      ${isAdmin ? `<button class="notes-bulk-btn del" onclick="notesBulkDelete('${sectionKey}')">🗑 Delete Rows</button>` : ''}
+      <button class="notes-bulk-btn desel" onclick="notesDeselectAll('${sectionKey}')">✕ Deselect</button>
+    </div>`,
+    ...display.map((row,i)=>{
+      const name = row ? (row.name||row.a||'').replace(/"/g,'&quot;') : '';
+      const cellColors = row ? (row.cellColors||{}) : {};
+      const dataCols = Array.from({length:NOTES_NUM_COLS}, (_,c)=>{
+        const v = row ? ((row.cols||[])[c]||'').replace(/"/g,'&quot;') : '';
+        const bg = cellColors[c] ? `style="background:${cellColors[c]}33;color:${cellColors[c]};"` : '';
+        if(isAdmin){
+          return `<input class="notes-cell" value="${v}" placeholder="" ${bg}
+            data-col="${c}" data-row="${i}" data-sk="${sectionKey}"
+            oninput="notesEnsureRow('${sectionKey}',${i});notesCell('${sectionKey}',${i},${c},this.value)"
+            oncontextmenu="openCellCp(event,'${sectionKey}',${i},${c});return false;"
+            onkeydown="notesHandleEnter(event,'${sectionKey}',${i},${c})"
+            onfocus="this.select()"
+          >`;
+        }
+        return `<input class="notes-cell" value="${v}" placeholder="" ${bg} data-col="${c}" readonly style="cursor:default;${cellColors[c]?`background:${cellColors[c]}33;color:${cellColors[c]};`:''}">`;
+      }).join('');
+      return `<div class="notes-row" id="${sectionKey}Row${i}" data-row-idx="${i}">
+        <div class="notes-row-num" onclick="notesToggleRowSelect('${sectionKey}',${i})" title="Click to select row">${i+1}</div>
+        <input class="notes-row-name" value="${name}"
+          placeholder="${row ? meta.cols[0] : ''}"
+          data-row="${i}" data-sk="${sectionKey}"
+          ${isAdmin ? `oninput="notesEnsureRow('${sectionKey}',${i});notesName('${sectionKey}',${i},this.value)"
+            onkeydown="notesHandleEnter(event,'${sectionKey}',${i},-1)"
+            onfocus="this.select()"` : 'readonly style="cursor:default;"'}
+        >${dataCols}
+        ${isAdmin ? `<button class="notes-row-del" onclick="deleteNoteRow('${sectionKey}',${i})" title="Delete row">×</button>` : '<div style="flex:0 0 32px;"></div>'}
+      </div>`;
+    })
+  ].join('');
+}
+
+// ── Row selection ─────────────────────────────────────────────────────────
+const _notesSelected = {}; // sectionKey → Set of row indices
+
+function notesToggleRowSelect(sectionKey, rowIdx){
+  if(!_notesSelected[sectionKey]) _notesSelected[sectionKey] = new Set();
+  const sel = _notesSelected[sectionKey];
+  if(sel.has(rowIdx)) sel.delete(rowIdx);
+  else sel.add(rowIdx);
+  _notesUpdateSelectionUI(sectionKey);
+}
+
+function notesDeselectAll(sectionKey){
+  if(_notesSelected[sectionKey]) _notesSelected[sectionKey].clear();
+  _notesUpdateSelectionUI(sectionKey);
+}
+
+function _notesUpdateSelectionUI(sectionKey){
+  const sel = _notesSelected[sectionKey] || new Set();
+  const barEl  = document.getElementById(sectionKey+'BulkBar');
+  const cntEl  = document.getElementById(sectionKey+'BulkBarCount');
+  // Update row highlights
+  const rowEls = document.querySelectorAll(`#${sectionKey}Rows .notes-row[data-row-idx]`);
+  rowEls.forEach(el=>{
+    const idx = parseInt(el.dataset.rowIdx);
+    el.classList.toggle('row-selected', sel.has(idx));
+    const numEl = el.querySelector('.notes-row-num');
+    if(numEl) numEl.textContent = sel.has(idx) ? '✓' : idx+1;
+  });
+  if(barEl) barEl.classList.toggle('visible', sel.size > 0);
+  if(cntEl) cntEl.textContent = `${sel.size} row${sel.size!==1?'s':''} selected`;
+}
+
+// Copy selected rows text to clipboard
+function notesBulkCopyRows(sectionKey){
+  const sel = _notesSelected[sectionKey] || new Set();
+  if(!sel.size){ showToast('No rows selected'); return; }
+  const rows = _notesData[sectionKey]||[];
+  const lines = [...sel].sort((a,b)=>a-b).map(i=>{
+    const r = rows[i];
+    if(!r) return '';
+    const name = r.name||r.a||'';
+    const cols = (r.cols||[]).filter(v=>v&&v.trim()).join('\t');
+    return name ? (cols ? `${name}\t${cols}` : name) : cols;
+  }).filter(Boolean);
+  if(!lines.length){ showToast('Selected rows are empty'); return; }
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    showToast(`✓ Copied ${lines.length} row(s) to clipboard`);
+  }).catch(()=>{
+    showToast('Copy failed — try Ctrl+C after selecting', true);
+  });
+}
+
+// Open panel-picker for copying ENTIRE panel contents
+function openCopyPanelModal(sectionKey){
+  const rows = (_notesData[sectionKey]||[]).filter(Boolean);
+  if(!rows.length){ showToast('This panel is empty'); return; }
+  // Re-use the same modal but pre-load all rows as the source
+  _copyNotesSource = { sectionKey, rows, isFullPanel: true };
+  const PANEL_COLORS = {
+    schedGraveyard:{ icon:'📆', color:'var(--accent2)',  bg:'rgba(79,209,197,.1)',  border:'rgba(79,209,197,.3)' },
+    sched63:       { icon:'📆', color:'var(--accent2)',  bg:'rgba(79,209,197,.1)',  border:'rgba(79,209,197,.3)' },
+    paypro1:       { icon:'⚡', color:'var(--accent)',   bg:'rgba(232,197,71,.1)',  border:'rgba(232,197,71,.3)' },
+    sundayOff:     { icon:'🌙', color:'var(--red)',      bg:'rgba(248,113,113,.1)', border:'rgba(248,113,113,.3)' },
+    gcash:         { icon:'💳', color:'#34d399',         bg:'rgba(52,211,153,.1)',  border:'rgba(52,211,153,.3)' },
+  };
+  const sub  = document.getElementById('copyNotesModalSub');
+  const grid = document.getElementById('copyNotesPanelGrid');
+  sub.innerHTML = `Copying <strong style="color:var(--accent)">${rows.length} row(s)</strong> from <strong style="color:var(--text)">"${NOTES_SECTIONS[sectionKey]?.label||sectionKey}"</strong> — select destination:`;
+  grid.innerHTML = Object.entries(NOTES_SECTIONS)
+    .filter(([k]) => k !== sectionKey)
+    .map(([k, sec])=>{
+      const p = PANEL_COLORS[k] || { icon:'📝', color:'var(--text)', bg:'rgba(255,255,255,.04)', border:'var(--border)' };
+      return `<div onclick="executeCopyToPanel('${k}')"
+        style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;
+               background:${p.bg};border:1px solid ${p.border};cursor:pointer;transition:all .15s;"
+        onmouseover="this.style.transform='translateX(4px)'"
+        onmouseout="this.style.transform=''">
+        <span style="font-size:20px;">${p.icon}</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:${p.color};">${sec.label}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${(_notesData[k]||[]).filter(Boolean).length} existing rows</div>
+        </div>
+        <span style="font-size:18px;color:var(--muted);">→</span>
+      </div>`;
     }).join('');
-    return `<div class="notes-row">
-      <div class="notes-row-num">${i+1}</div>
-      <input class="notes-row-name" value="${name}"
-        placeholder="${row ? meta.cols[0] : ''}"
-        ${isAdmin ? `oninput="notesEnsureRow('${sectionKey}',${i});notesName('${sectionKey}',${i},this.value)"` : 'readonly style="cursor:default;"'}
-      >${dataCols}
-      ${isAdmin ? `<button class="notes-row-del" onclick="deleteNoteRow('${sectionKey}',${i})" title="Remove row">×</button>` : '<div style="flex:0 0 32px;"></div>'}
-    </div>`;
-  }).join('');
+  document.getElementById('copyNotesModal').classList.add('open');
+}
+
+let _copyNotesSource = null;
+
+function notesBulkCopy(sectionKey){
+  const sel = _notesSelected[sectionKey] || new Set();
+  if(!sel.size){ showToast('No rows selected'); return; }
+  const rows = _notesData[sectionKey]||[];
+  const selectedRows = [...sel].sort((a,b)=>a-b).map(i=>rows[i]).filter(Boolean);
+  if(!selectedRows.length){ showToast('Selected rows are empty'); return; }
+
+  const PANEL_COLORS = {
+    schedGraveyard:{ icon:'📆', color:'var(--accent2)',  bg:'rgba(79,209,197,.1)',  border:'rgba(79,209,197,.3)' },
+    sched63:       { icon:'📆', color:'var(--accent2)',  bg:'rgba(79,209,197,.1)',  border:'rgba(79,209,197,.3)' },
+    paypro1:       { icon:'⚡', color:'var(--accent)',   bg:'rgba(232,197,71,.1)',  border:'rgba(232,197,71,.3)' },
+    sundayOff:     { icon:'🌙', color:'var(--red)',      bg:'rgba(248,113,113,.1)', border:'rgba(248,113,113,.3)' },
+    gcash:         { icon:'💳', color:'#34d399',         bg:'rgba(52,211,153,.1)',  border:'rgba(52,211,153,.3)' },
+  };
+
+  _copyNotesSource = { sectionKey, rows: selectedRows };
+  const grid = document.getElementById('copyNotesPanelGrid');
+  const sub  = document.getElementById('copyNotesModalSub');
+  sub.innerHTML = `Copying <strong style="color:var(--accent)">${selectedRows.length} selected row(s)</strong> from <strong style="color:var(--text)">"${NOTES_SECTIONS[sectionKey]?.label||sectionKey}"</strong> — select destination:`;
+  grid.innerHTML = Object.entries(NOTES_SECTIONS)
+    .filter(([k]) => k !== sectionKey)
+    .map(([k, sec])=>{
+      const p = PANEL_COLORS[k] || { icon:'📝', color:'var(--text)', bg:'rgba(255,255,255,.04)', border:'var(--border)' };
+      return `<div onclick="executeCopyToPanel('${k}')"
+        style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;
+               background:${p.bg};border:1px solid ${p.border};cursor:pointer;transition:all .15s;"
+        onmouseover="this.style.transform='translateX(4px)'"
+        onmouseout="this.style.transform=''">
+        <span style="font-size:20px;">${p.icon}</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:${p.color};">${sec.label}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${(_notesData[k]||[]).filter(Boolean).length} existing rows</div>
+        </div>
+        <span style="font-size:18px;color:var(--muted);">→</span>
+      </div>`;
+    }).join('');
+  document.getElementById('copyNotesModal').classList.add('open');
+}
+
+function closeCopyNotesModal(){
+  document.getElementById('copyNotesModal').classList.remove('open');
+  _copyNotesSource = null;
+}
+document.getElementById('copyNotesModal').addEventListener('click', function(e){ if(e.target===this) closeCopyNotesModal(); });
+
+async function executeCopyToPanel(destKey){
+  if(!_copyNotesSource) return;
+  if(!isAdmin){ showToast('Only admins can paste notes', true); return; }
+  const { sectionKey: srcKey, rows: srcRows } = _copyNotesSource;
+  const append = document.getElementById('copyNotesAppend').checked;
+
+  if(!_notesData[destKey]) _notesData[destKey] = [];
+  const destRows = _notesData[destKey].filter(Boolean);
+
+  let newRows;
+  if(append){
+    newRows = [...destRows, ...srcRows.map(r=>({...r, cellColors: r.cellColors ? {...r.cellColors} : {} }))];
+  } else {
+    newRows = srcRows.map(r=>({...r, cellColors: r.cellColors ? {...r.cellColors} : {} }));
+  }
+
+  _notesData[destKey] = newRows;
+  renderNoteSection(destKey);
+  closeCopyNotesModal();
+
+  // Persist to DB
+  try {
+    await sb.from('notes').delete().eq('section_key', destKey);
+    if(newRows.length){
+      await sb.from('notes').insert(newRows.map((r,i)=>({section_key:destKey, row_idx:i, row_data:r, updated_at:new Date().toISOString()})));
+    }
+    showToast(`✓ ${srcRows.length} row(s) pasted into "${NOTES_SECTIONS[destKey]?.label || destKey}"`);
+  } catch(e){
+    try{ localStorage.setItem('notes_'+destKey, JSON.stringify(newRows)); }catch(e2){}
+    showToast(`✓ Pasted (offline mode)`);
+  }
+}
+
+async function notesBulkDelete(sectionKey){
+  if(!isAdmin) return;
+  const sel = _notesSelected[sectionKey] || new Set();
+  if(!sel.size){ showToast('No rows selected'); return; }
+  openModal(
+    '🗑 Delete Selected Rows',
+    `Delete ${sel.size} selected row(s) from this panel? This cannot be undone.`,
+    async ()=>{
+      // Remove from highest index down to preserve indices
+      const indices = [...sel].sort((a,b)=>b-a);
+      for(const idx of indices){
+        if(_notesData[sectionKey]) _notesData[sectionKey].splice(idx,1);
+      }
+      _notesSelected[sectionKey] = new Set();
+      renderNoteSection(sectionKey);
+      // Re-save all rows
+      try {
+        await sb.from('notes').delete().eq('section_key', sectionKey);
+        const remaining = (_notesData[sectionKey]||[]).filter(Boolean);
+        if(remaining.length){
+          await sb.from('notes').insert(remaining.map((r,i)=>({section_key:sectionKey,row_idx:i,row_data:r,updated_at:new Date().toISOString()})));
+        }
+      } catch(e){
+        try{ localStorage.setItem('notes_'+sectionKey, JSON.stringify(_notesData[sectionKey])); }catch(e2){}
+      }
+      showToast(`✓ Deleted ${indices.length} row(s)`);
+    }
+  );
+  const btn = document.getElementById('modalConfirmBtn');
+  if(btn) btn.textContent = 'Delete';
+}
+
+// ── Enter key → move to next row ──────────────────────────────────────────
+function notesHandleEnter(event, sectionKey, rowIdx, colIdx){
+  if(event.key !== 'Enter') return;
+  event.preventDefault();
+  const nextRowIdx = rowIdx + 1;
+  // Ensure next row exists
+  notesEnsureRow(sectionKey, nextRowIdx);
+  // If we were at the last visible row, re-render to add a new one
+  const rows = _notesData[sectionKey]||[];
+  if(nextRowIdx >= rows.length - 1){
+    // Silently add a blank row if needed
+    while((_notesData[sectionKey]||[]).length <= nextRowIdx)
+      _notesData[sectionKey].push({ name:'', cols: Array(NOTES_NUM_COLS).fill('') });
+    renderNoteSection(sectionKey);
+  }
+  // Focus same column in next row
+  let nextEl;
+  if(colIdx === -1){
+    // Name column — focus name of next row
+    nextEl = document.querySelector(`#${sectionKey}Rows .notes-row[data-row-idx="${nextRowIdx}"] .notes-row-name`);
+  } else {
+    nextEl = document.querySelector(`#${sectionKey}Rows .notes-row[data-row-idx="${nextRowIdx}"] .notes-cell[data-col="${colIdx}"]`);
+  }
+  if(nextEl){ nextEl.focus(); nextEl.select(); }
 }
 
 // ── CELL COLOR PICKER (right-click a cell) ───────────────────────────────
@@ -3552,6 +3925,21 @@ function _notesFlush(sectionKey, rowIdx){
 async function renderNotesView(){
   if(isGuest) return;
   if(!_notesData._loaded){
+    // Check if notes table exists
+    const {error: tblErr} = await sb.from('notes').select('section_key').limit(1);
+    const hasNotesTable = !tblErr;
+    const statusEl = document.getElementById('notesDbStatus');
+    const bannerEl = document.getElementById('notesSqlBanner');
+    if(statusEl){
+      if(hasNotesTable){
+        statusEl.textContent = '✓ Connected to notes table';
+        statusEl.style.color = 'var(--green)';
+      } else {
+        statusEl.textContent = '⚠ Using fallback storage';
+        statusEl.style.color = 'var(--accent)';
+      }
+    }
+    if(bannerEl && isAdmin) bannerEl.style.display = hasNotesTable ? 'none' : 'block';
     await loadNotesData();
     _notesData._loaded = true;
   }
@@ -3579,15 +3967,23 @@ async function renderNotesView(){
 let _changesDebTimer = null;
 async function loadChangesText(){
   try {
-    const {data} = await sb.from('soft_skills').select('content').eq('year',0).eq('month',999).eq('row_num',999).single();
+    // Try new notes table first
+    const {data, error} = await sb.from('notes').select('row_data').eq('section_key','__changes__').eq('row_idx',0).single();
     const ta = document.getElementById('changesTextarea');
-    if(ta && data) ta.value = data.content.replace(/^CHANGES::/,'');
+    if(ta && data) ta.value = data.row_data?.text || '';
   } catch(e){
+    // Fallback: old soft_skills
     try {
-      const v = localStorage.getItem('notes_changes_text');
+      const {data} = await sb.from('soft_skills').select('content').eq('year',0).eq('month',999).eq('row_num',999).single();
       const ta = document.getElementById('changesTextarea');
-      if(ta && v) ta.value = v;
-    } catch(e2){}
+      if(ta && data) ta.value = data.content.replace(/^CHANGES::/,'');
+    } catch(e2){
+      try {
+        const v = localStorage.getItem('notes_changes_text');
+        const ta = document.getElementById('changesTextarea');
+        if(ta && v) ta.value = v;
+      } catch(e3){}
+    }
   }
 }
 function changesTextDebounce(val){
@@ -3596,49 +3992,62 @@ function changesTextDebounce(val){
 }
 async function saveChangesText(val){
   try {
-    await sb.from('soft_skills').upsert({
-      year:0, month:999, row_num:999,
-      content:'CHANGES::'+val
-    },{onConflict:'year,month,row_num'});
+    const {error} = await sb.from('notes').upsert(
+      {section_key:'__changes__', row_idx:0, row_data:{text:val}, updated_at:new Date().toISOString()},
+      {onConflict:'section_key,row_idx'}
+    );
+    if(error) throw error;
     const lbl = document.getElementById('changesSavedLbl');
     if(lbl){ lbl.textContent='✓ Saved'; lbl.style.opacity='1'; setTimeout(()=>lbl.style.opacity='0',1800); }
   } catch(e){
-    try{ localStorage.setItem('notes_changes_text', val); }catch(e2){}
+    // Fallback soft_skills
+    try {
+      await sb.from('soft_skills').upsert({
+        year:0, month:999, row_num:999, content:'CHANGES::'+val
+      },{onConflict:'year,month,row_num'});
+      const lbl = document.getElementById('changesSavedLbl');
+      if(lbl){ lbl.textContent='✓ Saved'; lbl.style.opacity='1'; setTimeout(()=>lbl.style.opacity='0',1800); }
+    } catch(e2){
+      try{ localStorage.setItem('notes_changes_text', val); }catch(e3){}
+    }
   }
 }
 function clearChangesText(){
-  openModal('🗑 Clear Changes Notes','Delete all text in Changes Notes? This cannot be undone.', async ()=>{
+  openModal('🗑 Delete Changes Notes','Delete all text in Changes Notes? This cannot be undone.', async ()=>{
     const ta = document.getElementById('changesTextarea');
     if(ta) ta.value = '';
     await saveChangesText('');
-    showToast('✓ Changes Notes cleared');
+    showToast('✓ Changes Notes deleted');
   });
+  const btn = document.getElementById('modalConfirmBtn');
+  if(btn) btn.textContent = 'Delete';
 }
 
 function clearNotePanel(sectionKeys){
   if(!isAdmin) return;
   const names = sectionKeys.map(k => NOTES_SECTIONS[k]?.label || k).join(' & ');
   openModal(
-    '🗑 Clear Panel',
+    '🗑 Delete Panel',
     `Delete ALL rows in "${names}"? This cannot be undone.`,
     async () => {
       for(const sectionKey of sectionKeys){
-        const rows = _notesData[sectionKey] || [];
-        const sectionIdx = Object.keys(NOTES_SECTIONS).indexOf(sectionKey) + 1;
         _notesData[sectionKey] = [];
+        if(_notesSelected[sectionKey]) _notesSelected[sectionKey].clear();
         renderNoteSection(sectionKey);
         try {
-          await sb.from('soft_skills').delete()
-            .eq('year', 0)
-            .eq('row_num', sectionIdx);
+          await sb.from('notes').delete().eq('section_key', sectionKey);
         } catch(e){
-          try{ localStorage.removeItem('notes_'+sectionKey); }catch(e2){}
+          // Fallback soft_skills
+          try {
+            const sectionIdx = Object.keys(NOTES_SECTIONS).indexOf(sectionKey) + 1;
+            await sb.from('soft_skills').delete().eq('year',0).eq('row_num',sectionIdx);
+          } catch(e2){}
+          try{ localStorage.removeItem('notes_'+sectionKey); }catch(e3){}
         }
       }
-      showToast('✓ Panel cleared');
+      showToast('✓ Panel deleted');
     }
   );
-  // Change confirm button label
   const btn = document.getElementById('modalConfirmBtn');
   if(btn) btn.textContent = 'Delete All';
 }

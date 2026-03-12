@@ -214,6 +214,20 @@
   .badge-today { background:rgba(192,132,252,.1); border:1px solid rgba(64, 145, 49,.3); color:#24b514;      font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
   .badge-future{ background:rgba(79,209,197,.1);  border:1px solid rgba(79,209,197,.3);  color:var(--accent2); font-size:11px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:100px; margin-left:5px; }
 
+  /* ── HISTORY EDIT EMPLOYEES ── */
+  .pills-editable{ cursor:pointer; border-radius:10px; padding:4px 6px; margin:-4px -6px; transition:background .15s; position:relative; display:inline-flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .pills-editable:hover{ background:rgba(232,197,71,.07); }
+  .pills-editable .edit-hint{ font-size:10px; color:var(--accent); opacity:0; transition:opacity .15s; white-space:nowrap; font-family:'DM Mono',monospace; margin-left:2px; }
+  .pills-editable:hover .edit-hint{ opacity:.8; }
+  /* edit employees modal */
+  .emp-edit-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; max-height:260px; overflow-y:auto; }
+  .emp-edit-row{ display:flex; align-items:center; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:9px 14px; transition:border-color .15s; }
+  .emp-edit-row.checked{ background:rgba(232,197,71,.07); border-color:rgba(232,197,71,.3); }
+  .emp-edit-row label{ display:flex; align-items:center; gap:10px; cursor:pointer; flex:1; font-size:13px; }
+  .emp-edit-row input[type=checkbox]{ width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+  .emp-edit-divider{ border:none; border-top:1px solid var(--border); margin:12px 0 14px; }
+  .emp-edit-note{ font-size:11px; color:var(--muted); margin-bottom:14px; }
+
   /* stats */
   .hist-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
   .count-badge{ background:var(--surface2); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:12px; font-family:'DM Mono',monospace; color:var(--muted); }
@@ -1309,6 +1323,21 @@ CREATE POLICY "Allow all" ON notes FOR ALL USING (true) WITH CHECK (true);</pre>
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="editEmpModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-close" onclick="closeEditEmpModal()">✕</div>
+    <div class="modal-title" id="editEmpModalTitle">Edit Assigned Employees</div>
+    <div class="modal-sub" id="editEmpModalSub">Check employees to keep assigned to this task.</div>
+    <p class="emp-edit-note">At least one employee must remain assigned.</p>
+    <div class="emp-edit-list" id="editEmpList"></div>
+    <hr class="emp-edit-divider">
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-secondary" onclick="closeEditEmpModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditEmp()" style="flex:1;justify-content:center;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
     <div class="modal-close" onclick="closeModal()">✕</div>
@@ -1891,17 +1920,27 @@ function renderHistTable(){
   document.getElementById('histCount').textContent=rows.length+' record'+(rows.length!==1?'s':'');
   renderHistStats(rows);
   tbody.innerHTML=rows.length
-    ? rows.map(a=>`<tr>
-        <td><strong>${a.task}</strong></td>
-        <td>
-          <span class="db">${fmtDate(a.dutyFrom)}</span>
-          <span style="color:var(--muted);margin:0 4px;">→</span>
-          <span class="db">${fmtDate(a.dutyTo)}</span>
-          ${rangeBadge(a)}
-        </td>
-        <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
-        <td><div class="pills">${a.employees.map(e=>`<span class="pill ${isPast(a)?'past':''}">${e}</span>`).join('')}</div></td>
-      </tr>`).join('')
+    ? rows.map(a=>{
+        const past = isPast(a);
+        const pillClass = past ? 'pill past' : 'pill';
+        const empCell = isAdmin && !past
+          ? `<div class="pills-editable" data-asgn-id="${a.id}" title="Click to edit assigned employees">
+               ${a.employees.map(e=>`<span class="pill">${e}</span>`).join('')}
+               <span class="edit-hint">✏ edit</span>
+             </div>`
+          : `<div class="pills">${a.employees.map(e=>`<span class="${pillClass}">${e}</span>`).join('')}</div>`;
+        return `<tr>
+          <td><strong>${a.task}</strong></td>
+          <td>
+            <span class="db">${fmtDate(a.dutyFrom)}</span>
+            <span style="color:var(--muted);margin:0 4px;">→</span>
+            <span class="db">${fmtDate(a.dutyTo)}</span>
+            ${rangeBadge(a)}
+          </td>
+          <td><span class="db">${fmtDate(a.dateAssigned)}</span></td>
+          <td>${empCell}</td>
+        </tr>`;
+      }).join('')
     : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px;">No records match the filter.</td></tr>`;
 }
 function renderHistStats(rows){
@@ -1919,6 +1958,89 @@ function renderHistStats(rows){
     <div class="stat-card"><div class="stat-num">${uEmps}</div><div class="stat-lbl">Employees Involved</div></div>
     <div class="stat-card"><div class="stat-num">${uTasks}</div><div class="stat-lbl">Unique Tasks</div></div>
     ${top?`<div class="stat-card"><div class="stat-num" style="font-size:20px;padding-top:6px;">${top[0]}</div><div class="stat-lbl">Top Task</div></div>`:''}`;
+}
+
+// ─── HISTORY EMPLOYEE EDIT ───────────────────────────────────────────────
+let _editEmpAssignmentId = null;
+
+// Event delegation — handles clicks on dynamically rendered pills-editable rows
+document.addEventListener('click', function(e){
+  const cell = e.target.closest('.pills-editable');
+  if(cell && isAdmin){
+    const id = cell.getAttribute('data-asgn-id');
+    if(id) openEditEmpModal(id);
+  }
+});
+
+function openEditEmpModal(assignmentId){
+  if(!isAdmin) return;
+  // Use loose == so numeric DB id matches string from attribute
+  const asgn = S.assignments.find(a=>a.id == assignmentId);
+  if(!asgn) return;
+  _editEmpAssignmentId = asgn.id;
+  document.getElementById('editEmpModalTitle').textContent = 'Edit Employees — '+asgn.task;
+  document.getElementById('editEmpModalSub').textContent = 'Check to assign, uncheck to remove.';
+  const list = document.getElementById('editEmpList');
+  list.innerHTML = S.employees.map(e=>{
+    const checked = asgn.employees.includes(e);
+    const safeKey = e.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div class="emp-edit-row${checked?' checked':''}" id="emp-edit-row-${safeKey}">
+      <label>
+        <input type="checkbox" ${checked?'checked':''} value="${e}"
+          onchange="empEditToggleRow(this,'${safeKey}')">
+        ${e}
+      </label>
+    </div>`;
+  }).join('');
+  document.getElementById('editEmpModal').classList.add('open');
+}
+
+function empEditToggleRow(cb, safeKey){
+  const row = document.getElementById('emp-edit-row-'+safeKey);
+  if(row) row.classList.toggle('checked', cb.checked);
+}
+
+function closeEditEmpModal(){
+  document.getElementById('editEmpModal').classList.remove('open');
+  _editEmpAssignmentId = null;
+}
+document.getElementById('editEmpModal').addEventListener('click', function(e){ if(e.target===this) closeEditEmpModal(); });
+
+async function saveEditEmp(){
+  if(!isAdmin || !_editEmpAssignmentId) return;
+  const asgn = S.assignments.find(a=>a.id===_editEmpAssignmentId);
+  if(!asgn) return;
+  const checkboxes = document.querySelectorAll('#editEmpList input[type=checkbox]');
+  const selected = [...checkboxes].filter(c=>c.checked).map(c=>c.value);
+  if(selected.length === 0){
+    showToast('At least one employee must remain assigned.', true); return;
+  }
+  const toAdd    = selected.filter(e=>!asgn.employees.includes(e));
+  const toRemove = asgn.employees.filter(e=>!selected.includes(e));
+  if(!toAdd.length && !toRemove.length){
+    closeEditEmpModal(); return;
+  }
+  try {
+    if(toRemove.length){
+      const {error} = await sb.from('assignment_employees')
+        .delete()
+        .eq('assignment_id', _editEmpAssignmentId)
+        .in('employee_name', toRemove);
+      if(error) throw error;
+    }
+    if(toAdd.length){
+      const {error} = await sb.from('assignment_employees')
+        .insert(toAdd.map(e=>({assignment_id: _editEmpAssignmentId, employee_name: e})));
+      if(error) throw error;
+    }
+    asgn.employees = selected;
+    showToast(`✓ Updated employees for ${asgn.task}`);
+    closeEditEmpModal();
+    renderHistTable();
+    renderAll();
+  } catch(e){
+    showToast('Error: '+e.message, true);
+  }
 }
 
 // ─── BULK DELETE PAST TASKS ───────────────────────────────────────────────
